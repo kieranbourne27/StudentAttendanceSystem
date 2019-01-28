@@ -9,4 +9,4 @@ CREATE TABLE Users (
 );
 
 INSERT INTO Users (Username, Password, Name, UserType, id) VALUES
-('k4-bourne', 'password', 'Kieran Bourne' 'Student', 1);
+('k4-bourne', 'password', 'Kieran Bourne', 'Student', 1);

@@ -66,10 +66,8 @@
     margin-right: auto;
     width: 50%;
     border: 1px;
-    border-style: solid;
-    border-color: black;
-    background: white;
-    color: black;
+    background: black;
+    color: white;
     padding: 2px;
     vertical-align: central;
     font-family: sans-serif;
@@ -85,7 +83,7 @@
 }
 
 .loginForm a {
-    //color: white;
+    color: white;
     padding-left: 5px;
 }
 
