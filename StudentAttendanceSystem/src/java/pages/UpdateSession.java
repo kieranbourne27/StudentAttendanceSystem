@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.text.DecimalFormat;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
@@ -22,9 +21,9 @@ import model.Jdbc;
 
 /**
  *
- * @author Callum
+ * @author Kieran
  */
-public class InvoiceViewer extends HttpServlet {
+public class UpdateSession extends HttpServlet {
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -37,61 +36,59 @@ public class InvoiceViewer extends HttpServlet {
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
         response.setContentType("text/html;charset=UTF-8");
-        HttpSession session = request.getSession();
-        Jdbc jdbc = new Jdbc();
-        jdbc.connect((Connection) request.getServletContext().getAttribute("connection"));
-        session.setAttribute("dbbean", jdbc);
-
-        String invoiceID = (String) request.getParameter("invoiceID");
-        String queryForInvoices = "Select * FROM INVOICES where "
-                + "ID=" + invoiceID
-                + " AND CUSTOMERNAME ='" + session.getAttribute("username") + "'";
-        String queryForVAT = "SELECT vat FROM pricing";
-
-        String[] invoiceData = requestDemands(session, queryForInvoices);
-        String[] invoiceVat = jdbc.retrieveQueryWithStringArray(queryForVAT);
-
-        if (invoiceData[0] != null && invoiceVat[0] != null) {
-            createInvoiceFormat(invoiceData, request, invoiceVat[0]);
-            request.getRequestDispatcher("/WEB-INF/invoiceDisplay.jsp").forward(request, response);
-        } else {
-            request.setAttribute("message", "Sorry that invoice number is invalid.");
-            request.getRequestDispatcher("/WEB-INF/portal.jsp").forward(request, response);
+        HttpSession session = request.getSession(false);
+        String[] query = captureSessionData(request);
+        
+        Jdbc dbBean = new Jdbc();
+        dbBean.connect((Connection) request.getServletContext().getAttribute("connection"));
+        session.setAttribute("dbbean", dbBean);
+        updateSession(dbBean, query, request, session, response);
+    }
+    
+    private void updateSession(Jdbc dbBean, String[] query, HttpServletRequest request, HttpSession session, HttpServletResponse response) throws IOException, ServletException {
+        String updateQuery = "UPDATE SESSION SET MODULE = '" + query[0] 
+                + "', ROOM = '" + query[1] 
+                + "', TIME = '"+ query[2] 
+                + "' WHERE REFERENCE = '" + request.getParameter("sessionReference") + "'";
+        if (dbBean.updateTableWithQuery(updateQuery)) {            
+            request.setAttribute("message", "Session has been updated");
+            getSessionsForUser(session, request, response);
+        }
+        else {
+            request.setAttribute("message", query[0] + " was not added.");
         }
     }
+    
+    private String[] captureSessionData(HttpServletRequest request) {
+        String[] query = new String[5];
+        query[0] = (String) request.getParameter("module");
+        query[1] = (String) request.getParameter("room");
+        query[2] = (String) request.getParameter("time");
 
-    private String[] requestDemands(HttpSession session, String qry) {
-        String[] result = null;
+        return query;
+    }
+    
+    private void getSessionsForUser(HttpSession session,  HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException{
+        String msg = "No sessions";
+        String query = "SELECT MODULE, ROOM, TIME, REFERENCE FROM SESSION "
+                + "JOIN USERS ON USERS.ID = SESSION.OWNER_ID "
+                + "WHERE USERS.USERNAME = '" + session.getAttribute("username") + "'";
+        String result = requestData(session, msg, query);
+        
+        request.setAttribute("sessionTable", result);
+        request.getRequestDispatcher("/WEB-INF/manageSessions.jsp").forward(request, response);
+    }
+    
+    private String requestData(HttpSession session, String msg, String qry) {
         try {
             Jdbc dbBean = (Jdbc) session.getAttribute("dbbean");
-            result = dbBean.selectInvoices(qry);
+            msg = dbBean.retrieve(qry, session);
         } catch (SQLException ex) {
             Logger.getLogger(UserServLet.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        return result;
-    }
-
-    private void createInvoiceFormat(String[] invoiceData, HttpServletRequest request, String vat) {
-        String vatMultiplier = "1." + vat;
-        DecimalFormat decimalF = new DecimalFormat("#.##");
-        double vatMulti = Double.parseDouble(vatMultiplier);
-        double totalCost = Integer.parseInt(invoiceData[7]) * vatMulti;
-        
-        String formalInvoice
-                = "Dear " + invoiceData[2] + ","
-                + "</br>Thank you for your custom. Your booking information: </br>"
-                + "Day: " + invoiceData[5] + ".</br>"
-                + "Time: " + invoiceData[6] + ".</br></br>"
-                + "The registration number of your taxi is: " + invoiceData[3] + ".</br>"
-                + "For your journey, the cost of the taxi will be £" + invoiceData[7].toString() + ".</br>"
-                + "The VAT for the journey is " + vat + "%, making the total cost: £" + decimalF.format(totalCost) + ".</br>"
-                + "</br>Thank you again for your custom, </br>"
-                + "AlphaCab.";
-
-        request.setAttribute("formalInvoice", formalInvoice);
+        return msg;
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">

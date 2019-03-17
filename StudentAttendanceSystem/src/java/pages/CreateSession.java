@@ -5,8 +5,13 @@
  */
 package pages;
 
+import com.UserServLet;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -16,9 +21,9 @@ import model.Jdbc;
 
 /**
  *
- * @author me-aydin
+ * @author Kieran
  */
-public class NewUser extends HttpServlet {
+public class CreateSession extends HttpServlet {
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -33,42 +38,55 @@ public class NewUser extends HttpServlet {
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         HttpSession session = request.getSession(false);
-        String[] query = captureUserData(request);
-        String userType = (String) request.getParameter("userType");
-
+        String[] query = captureSessionData(request);
+        
         Jdbc dbBean = new Jdbc();
         dbBean.connect((Connection) request.getServletContext().getAttribute("connection"));
         session.setAttribute("dbbean", dbBean);
-
-        if (dbBean.exists(query[0])) {
-            request.setAttribute("message", query[0] + " is already taken");
-        } 
-        else {
-            createUser(dbBean, query, request, session, response);
-        }
+        createSession(dbBean, query, request, session, response);
     }
-
-    private void createUser(Jdbc dbBean, String[] query, HttpServletRequest request, HttpSession session, HttpServletResponse response) throws IOException, ServletException {
-        if (dbBean.insertUser(query)) {            
-            request.setAttribute("message", query[0] + " is added");
+    
+    private void createSession(Jdbc dbBean, String[] query, HttpServletRequest request, HttpSession session, HttpServletResponse response) throws IOException, ServletException {
+        if (dbBean.insertSession(query, session)) {            
             if (session.getAttribute("username") != null) {
-                request.getRequestDispatcher("/WEB-INF/user.jsp").forward(request, response);
+                request.setAttribute("message", "Session successfully created");
+                getSessionsForUser(session, request, response);
             }
         }
         else {
             request.setAttribute("message", query[0] + " was not added.");
         }
     }
-
-    private String[] captureUserData(HttpServletRequest request) {
+    
+    private String[] captureSessionData(HttpServletRequest request) {
         String[] query = new String[5];
-        query[0] = (String) request.getParameter("username");
-        query[1] = (String) request.getParameter("password");
-        query[2] = (String) request.getParameter("fullName");
-        query[3] = (String) request.getParameter("userType");
-        query[4] = (String) request.getParameter("studentNumber");
+        query[0] = (String) request.getParameter("module");
+        query[1] = (String) request.getParameter("room");
+        query[2] = (String) request.getParameter("time");
 
         return query;
+    }
+    
+    private void getSessionsForUser(HttpSession session,  HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException{
+        String msg = "No sessions";
+        String query = "SELECT MODULE, ROOM, TIME, REFERENCE FROM SESSION "
+                + "JOIN USERS ON USERS.ID = SESSION.OWNER_ID "
+                + "WHERE USERS.USERNAME = '" + session.getAttribute("username") + "'";
+        String result = requestData(session, msg, query);
+        
+        request.setAttribute("sessionTable", result);
+        request.getRequestDispatcher("/WEB-INF/manageSessions.jsp").forward(request, response);
+    }
+    
+    private String requestData(HttpSession session, String msg, String qry) {
+        try {
+            Jdbc dbBean = (Jdbc) session.getAttribute("dbbean");
+            msg = dbBean.retrieve(qry, session);
+        } catch (SQLException ex) {
+            Logger.getLogger(UserServLet.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return msg;
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">

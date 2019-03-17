@@ -8,9 +8,9 @@ package pages;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -20,9 +20,9 @@ import model.Jdbc;
 
 /**
  *
- * @author k4-bourne
+ * @author Kieran
  */
-public class Reporting extends HttpServlet {
+public class AttendanceHandler extends HttpServlet {
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -37,42 +37,33 @@ public class Reporting extends HttpServlet {
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         HttpSession session = request.getSession(false);
+
         Jdbc dbBean = new Jdbc();
-        dbBean.connect((Connection)request.getServletContext().getAttribute("connection"));
-        session.setAttribute("dbbean", dbBean);
+        dbBean.connect((Connection) request.getServletContext().getAttribute("connection"));
         
-        String date = request.getParameter("date");
-        
-        String[] queryResults = dbBean.retrieveReportingInformation(date);
-        createReportFormat(queryResults, request, date);
-        operationsReport(request, dbBean, date);
-        request.getRequestDispatcher("/WEB-INF/reporting.jsp").forward(request, response);
-    }
-    
-    private void createReportFormat(String[] queryResults, HttpServletRequest request, String date) {
-        String report = "";
-        if (queryResults.length != 0) {
-            report = "<b><u>Information summary for " + date + "</u></b><br/><br/>The total turnover for today is: £" + queryResults[0] + "<br/>"
-                + "The number of customers served today is: " + queryResults[1] + "<br/>";
-        } else {
-            report = "There is no information to report on for this day.";
+        if ((Connection) request.getServletContext().getAttribute("connection") == null) {
+            request.getRequestDispatcher("/WEB-INF/conErr.jsp").forward(request, response);
         }
         
-        request.setAttribute("dailyReport", report);
-    }
-    
-    private void operationsReport(HttpServletRequest request, Jdbc dbBean, String date) throws IOException, ServletException {
-        try {
-            String msg = "No operations";
-            String qry = "SELECT CUSTOMERNAME, JRNY.DESTINATION, PRICE FROM INVOICES " +
-                    "JOIN JOURNEY JRNY ON JRNY.JID = INVOICES.JID " +
-                    "WHERE INVOICES.DATE = '" + date + "'";
-            
-            String journeyResult = dbBean.retrieve(qry);
-                    
-            request.setAttribute("reportingQuery", journeyResult);
-        } catch (SQLException ex) {
-            Logger.getLogger(Reporting.class.getName()).log(Level.SEVERE, null, ex);
+        switch(request.getParameter("tbl")){
+            case "SubmitStudentNumber":
+                if (session.getAttribute("attendanceList") == null) {
+                    List<String> attendanceList = new ArrayList();
+                    session.setAttribute("attendanceList", attendanceList);
+                }
+                List<String> attendanceList = (List) session.getAttribute("attendanceList");
+                attendanceList.add(request.getParameter("studentNumber"));
+                request.setAttribute("clearAttendees", "false");
+                request.getRequestDispatcher("/WEB-INF/recordAttendance.jsp").forward(request, response);
+                break;
+            default:
+                List<String> sessionDetails = Arrays.asList(dbBean.retrieveSessionDetails(request.getParameter("sessionReference")));
+                session.setAttribute("module", sessionDetails.get(0));
+                session.setAttribute("room", sessionDetails.get(1));
+                session.setAttribute("time", sessionDetails.get(2));
+                request.setAttribute("clearAttendees", "true");
+                request.getRequestDispatcher("/WEB-INF/recordAttendance.jsp").forward(request, response);
+                break;
         }
     }
 

@@ -17,17 +17,9 @@ import model.Jdbc;
 
 /**
  *
- * @author c2-sellick
+ * @author Kieran
  */
-public class requestBooking extends HttpServlet {
-    
-    private final String STARTADDRESS = "startAddress";
-    
-    private final String DESTINATIONADDRESS = "destAddress";
-    
-    private final String DATE = "date";
-    
-    private final String TIME = "pickupTime";
+public class SessionAction extends HttpServlet {
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -40,36 +32,27 @@ public class requestBooking extends HttpServlet {
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        response.setContentType("text/html;charset=UTF-8");
+        HttpSession session = request.getSession(false);
+
+        Jdbc dbBean = new Jdbc();
+        dbBean.connect((Connection) request.getServletContext().getAttribute("connection"));
         
-            HttpSession session = request.getSession();
-            response.setContentType("text/html;charset=UTF-8");
-            Jdbc jdbc = new Jdbc();
-            jdbc.connect((Connection)request.getServletContext().getAttribute("connection"));
-            
-            String [] query = new String[5];
-            query[0] = (String)session.getAttribute("username");
-            query[1] = (String)request.getParameter(STARTADDRESS);
-            query[2] = (String)request.getParameter(DESTINATIONADDRESS);
-            query[3] = (String)request.getParameter(DATE);
-            query[4] = (String)request.getParameter(TIME);
-            
-            if(query[0] == null || query[0].equals("") ) {
-                request.setAttribute("message", "No fields can be left blank.");
-            } 
-            else {
-                if(jdbc.insertBooking(query)){
-                    request.setAttribute("message", "Thank you " + 
-                            query[0] + " " + query[1] + 
-                            ", your booking was successful.");
-                    
-                    jdbc.closeAll();
-                    request.getRequestDispatcher("/WEB-INF/portal.jsp").forward(request, response);
-                }else{
-                    request.setAttribute("message", "Sorry "+ query[0] + " " + 
-                            query[1] + " was not added.");
-                }
-            }
-            request.getRequestDispatcher("/requestBooking.jsp").forward(request, response);
+        if ((Connection) request.getServletContext().getAttribute("connection") == null) {
+            request.getRequestDispatcher("/WEB-INF/conErr.jsp").forward(request, response);
+        }
+        
+        switch(request.getParameter("tbl")){
+            case "Create": request.getRequestDispatcher("/WEB-INF/createSession.jsp").forward(request, response); break;
+            case "Edit":
+                String[] sessionDetails = dbBean.retrieveSessionDetails(request.getParameter("sessionReference"));
+                request.setAttribute("module", sessionDetails[0]);
+                request.setAttribute("room", sessionDetails[1]);
+                request.setAttribute("time", sessionDetails[2]);
+                request.setAttribute("sessionReference", request.getParameter("sessionReference"));
+                request.getRequestDispatcher("/WEB-INF/editSession.jsp").forward(request, response); 
+                break;
+        }
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">

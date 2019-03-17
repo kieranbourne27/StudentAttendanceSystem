@@ -1,9 +1,3 @@
-<%-- 
-    Document   : driver
-    Created on : 01-Nov-2015, 15:18:08
-    Author     : me-aydin
---%>
-
 <%@page import="model.Jdbc"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
@@ -11,9 +5,9 @@
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <link rel="stylesheet" type="text/css" href="main.css">
-        <title>Login Main Page</title>
+        <title>Create a New User</title>
     </head>
-    <body>
+    <body onload="displayStudentNumberInput()">
 <%
     if(session.getAttribute("username") == null){
         response.sendRedirect("index.jsp");
@@ -63,49 +57,65 @@
         %>
         <h1>User's details:</h1>
         <form method="POST" action="<%=url%>">     
-            <table>
+            <table id="newUserTable">
                 <tr>
                     <th></th>
-                    <th>Please provide your following details</th>
+                    <th>Please provide the following details</th>
                 </tr>
-                <tr>
-                    <td>Username:</td>
-                    <td><input type="text" name="username" required/></td>
-                </tr>
-                <tr>
-                    <td>Password:</td>
-                    <td><input type="password" name="password" required/></td>
-                </tr>
-                <tr>
-                    <td>User Type (customer, admin, driver):</td>
-                    <td>
-                        <select name="userType" required>
-                            <option value = "admin">Admin</option>
-                            <option value = "driver">Driver</option>
-                            <option value = "customer">Customer</option>
-                        </select>
-                    </td>
-                </tr>
-                <tr>
-                    <td>Registration Number:</td>
-                    <td><input type="text" name="regNumber"/></td>
-                </tr>
+                <tbody>
+                    <tr>
+                        <td>Username:</td>
+                        <td><input type="text" name="username" required/></td>
+                    </tr>
+                    <tr>
+                        <td>Password:</td>
+                        <td><input type="password" name="password" required/></td>
+                    </tr>
+                    <tr>
+                        <td>Name:</td>
+                        <td><input type="text" name="fullName" required/></td>
+                    </tr>
+                    <tr>
+                        <td>User Type (Admin, Lecturer, Student):</td>
+                        <td>
+                            <select id="userType" name="userType" onchange="displayStudentNumberInput()" required>
+                                <option value="Admin">Admin</option>
+                                <option value="Lecturer">Lecturer</option>
+                                <option value="Student">Student</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr id="studentNumberRow">
+                        <td>Student Number:</td>
+                        <td><input type="text" name="studentNumber" required</td>
+                    </tr>
+                </tbody
                 <tr> 
                     <td> <input type="submit" value="<%=str%>"/></td>
                 </tr>
             </table>
-        </form> 
+        </form>
         <%
             } 
         %>
-        
-        <%
-            if (i++>0 && request.getAttribute("message")!=null) {
-                out.println(request.getAttribute("message"));
-                i--;
-            }
-        %>
+        <p><%
+                if (request.getAttribute("message") != null) {
+                    out.println(request.getAttribute("message"));
+                }
+            %></p>
         </br>
         <jsp:include page="foot.jsp"/>
+        
+        <script>
+                   function displayStudentNumberInput() {
+                        var e = document.getElementById("userType");
+                        var selectedUserType = e.options[e.selectedIndex].value;
+                        if (selectedUserType === "Student") {
+                            document.getElementById("studentNumberRow").style.visibility = "visible";
+                        } else {
+                            document.getElementById("studentNumberRow").style.visibility = "hidden";
+                        }
+                   }
+        </script>
     </body>
 </html>

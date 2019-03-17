@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package model;
 
 import java.sql.Connection;
@@ -16,20 +11,16 @@ import java.sql.SQLException;
 import java.sql.Time;
 import static java.sql.Types.NULL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.servlet.http.HttpSession;
 
-/**
- *
- * @author me-aydin
- */
 public class Jdbc {
     
     Connection connection = null;
     Statement statement = null;
-    ResultSet rs = null;
-    //String query = null;
-    
+    ResultSet rs = null;    
     
     public Jdbc(String query){
         //this.query = query;
@@ -98,175 +89,16 @@ public class Jdbc {
         return b.toString();
     }//makeHtmlTable
     
-    private String makeUserBookingsTable(ArrayList list) {
+    private String makeSessionsTable(ArrayList list, HttpSession session) {
         StringBuilder b = new StringBuilder();
         String[] row;
         b.append("<table border=\"3\">");
         
         b.append("<tr>");
-        b.append("<th>Name</th>");
-        b.append("<th>Address</th>");
-        b.append("<th>Destination</th>");
-        b.append("<th>Date</th>");
+        b.append("<th>Module</th>");
+        b.append("<th>Room</th>");
         b.append("<th>Time</th>");
-        b.append("<th>Status</th>");
-        b.append("<tr>");
-        
-        for (Object s : list) {
-          b.append("<tr>");
-          row = (String[]) s;
-            for (String row1 : row) {
-                b.append("<td>");
-                b.append(row1);
-                b.append("</td>");
-            }
-          b.append("</tr>\n");
-        } // for
-        b.append("</table>");
-        return b.toString();
-    }//makeHtmlTable
-    
-    private String makeBookingsTable(ArrayList list) {
-        StringBuilder b = new StringBuilder();
-        String[] row;
-        b.append("<table border=\"3\">");
-        
-        b.append("<tr>");
-        b.append("<th>ID</th>");
-        b.append("<th>Name</th>");
-        b.append("<th>Address</th>");
-        b.append("<th>Destination</th>");
-        b.append("<th>Date</th>");
-        b.append("<th>Time</th>");
-        b.append("<th>Status</th>");
-        b.append("<tr>");
-        
-        for (Object s : list) {
-          b.append("<tr>");
-          row = (String[]) s;
-            for (String row1 : row) {
-                b.append("<td>");
-                b.append(row1);
-                b.append("</td>");
-            }
-          b.append("</tr>\n");
-        } // for
-        b.append("</table>");
-        return b.toString();
-    }//makeHtmlTable
-    
-    private String makeJourneysTable(ArrayList list) {
-        StringBuilder b = new StringBuilder();
-        String[] row;
-        b.append("<table border=\"3\">");        
-        b.append("<tr>");
-        b.append("<th>Destination</th>");
-        b.append("<th>Distance</th>");
-        b.append("<th>Date</th>");
-        b.append("<th>Time</th>");
-        b.append("<th>Registration</th>");
-        b.append("<tr>");
-        
-        for (Object s : list) {
-          b.append("<tr>");
-          row = (String[]) s;
-            for (String row1 : row) {
-                b.append("<td>");
-                b.append(row1);
-                b.append("</td>");
-            }
-          b.append("</tr>\n");
-        } // for
-        b.append("</table>");
-        return b.toString();
-    }
-    
-    private String makeInvoiceTable(ArrayList list) {
-        StringBuilder b = new StringBuilder();
-        String[] row;
-        b.append("<table border=\"3\">");
-        b.append("<tr>");
-        b.append("<th>ID</th>");
-        b.append("<th>Name</th>");
-        b.append("<th>Driver Registration</th>");
-        b.append("<th>Mileage</th>");
-        b.append("<th>Date</th>");
-        b.append("<th>Time</th>");
-        b.append("<th>Price (£)</th>");
-        b.append("<tr>");
-        
-        for (Object s : list) {
-          b.append("<tr>");
-          row = (String[]) s;
-            for (String row1 : row) {
-                b.append("<td>");
-                b.append(row1);
-                b.append("</td>");
-            }
-          b.append("</tr>\n");
-        } // for
-        b.append("</table>");
-        return b.toString();
-    }//makeHtmlTable
-    
-    private String makeDriverTable(ArrayList list) {
-        StringBuilder b = new StringBuilder();
-        String[] row;
-        b.append("<table border=\"3\">");
-        b.append("<tr>");
-        b.append("<th>Registration</th>");
-        b.append("<th>Name</th>");
-        b.append("<tr>");
-        
-        for (Object s : list) {
-          b.append("<tr>");
-          row = (String[]) s;
-            for (String row1 : row) {
-                b.append("<td>");
-                b.append(row1);
-                b.append("</td>");
-            }
-          b.append("</tr>\n");
-        } // for
-        b.append("</table>");
-        return b.toString();
-    }//makeHtmlTable
-    
-    private String makeDriverJourneysTable(ArrayList list) {
-        StringBuilder b = new StringBuilder();
-        String[] row;
-        b.append("<table border=\"3\">");
-        b.append("<tr>");
-        b.append("<th>JID</th>");
-        b.append("<th>Registration</th>");
-        b.append("<th>Destination</th>");
-        b.append("<th>Distance</th>");
-        b.append("<th>Date</th>");
-        b.append("<th>Time</th>");
-        b.append("<tr>");
-        
-        for (Object s : list) {
-          b.append("<tr>");
-          row = (String[]) s;
-            for (String row1 : row) {
-                b.append("<td>");
-                b.append(row1);
-                b.append("</td>");
-            }
-          b.append("</tr>\n");
-        } // for
-        b.append("</table>");
-        return b.toString();
-    }//makeHtmlTable
-    
-    private String makeOperationsTable(ArrayList list) {
-        StringBuilder b = new StringBuilder();
-        String[] row;
-        b.append("<table border=\"3\">");
-        b.append("<tr>");
-        b.append("<th>Customer Name</th>");
-        b.append("<th>Destination</th>");
-        b.append("<th>Price (£)</th>");
+        b.append("<th>Reference</th>");
         b.append("<tr>");
         
         for (Object s : list) {
@@ -297,28 +129,6 @@ public class Jdbc {
         }
     }
     
-    public String[] selectInvoices(String query) throws SQLException{
-      String[] result = new String[8];
-      int index = 0;
-      
-      try {
-            statement = connection.createStatement();
-            rs = statement.executeQuery(query);
-            
-            for (Object s : rsToList()) {
-                String[] row = (String[]) s;
-                for (String row1 : row) {
-                    result[index++] = row1;
-                }
-            }
-        }
-        catch(SQLException e) {
-            System.out.println("way way"+e);
-            //results = e.toString();
-        }
-        return result;
-    }
-    
     public String retrieveUserType(String username){
         String query = "SELECT USERTYPE FROM TEST.USERS Where UserName = '" + username + "'";
         String result = null;
@@ -338,48 +148,6 @@ public class Jdbc {
             //results = e.toString();
         }
         return result;
-    }
-    
-    public String[] retrieveReportingInformation(String date) {
-        String turnover = "0";
-        String customersServed = "0";
-        String turnoverQuery = "SELECT SUM(PRICE) FROM INVOICES WHERE DATE = '" + date + "'";
-        String customerThroughputQuery = "SELECT COUNT(DISTINCT CUSTOMERNAME) FROM INVOICES WHERE DATE = '" + date + "'";
-        String result = null;
-        
-        try {
-            statement = connection.createStatement();
-            rs = statement.executeQuery(turnoverQuery);
-            
-            for (Object s : rsToList()) {
-                String[] row = (String[]) s;
-                for (String row1 : row) {
-                    result = row1;
-                }
-            }
-            
-            if (result != null) {
-                turnover = String.valueOf(result);
-            }
-            
-            rs = statement.executeQuery(customerThroughputQuery);
-            
-            for (Object s : rsToList()) {
-                String[] row = (String[]) s;
-                for (String row1 : row) {
-                    result = row1;
-                }
-            }
-            
-            customersServed = String.valueOf(result);
-        }
-        catch(SQLException e) {
-            System.out.println("Error retrieving reporting information " + e);
-        }
-        
-        String[] results = new String[] {turnover, customersServed}; 
-        
-        return results;
     }
     
     public int retrieveNextID(){
@@ -403,95 +171,55 @@ public class Jdbc {
         return result;
     }
     
-    public int retrieveNextBookingID(){
-        String query = "SELECT COUNT(ID) FROM TEST.DEMANDS";
-        int result = 0;
-        try {
-            statement = connection.createStatement();
-            rs = statement.executeQuery(query);
-            
-            for (Object s : rsToList()) {
-                String[] row = (String[]) s;
-                for (String row1 : row) {
-                    result = Integer.valueOf(row1) + 1;
-                }
-            }
-        }
-        catch(SQLException e) {
-            System.out.println("way way" + e);
-            //results = e.toString();
-        }
-        return result;
-    }
-    
-    public int retrieveNextJourneyID(){
-        String query = "SELECT COUNT(JID) FROM TEST.JOURNEY";
-        int result = 0;
-        try {
-            statement = connection.createStatement();
-            rs = statement.executeQuery(query);
-            
-            for (Object s : rsToList()) {
-                String[] row = (String[]) s;
-                for (String row1 : row) {
-                    result = Integer.valueOf(row1) + 1;
-                }
-            }
-        }
-        catch(SQLException e) {
-            System.out.println("way way" + e);
-            //results = e.toString();
-        }
-        return result;
-    }
-    
-    public int retrieveNextInvoiceID(){
-        String query = "SELECT COUNT(ID) FROM TEST.INVOICES";
-        int result = 0;
-        try {
-            statement = connection.createStatement();
-            rs = statement.executeQuery(query);
-            
-            for (Object s : rsToList()) {
-                String[] row = (String[]) s;
-                for (String row1 : row) {
-                    result = Integer.valueOf(row1) + 1;
-                }
-            }
-        }
-        catch(SQLException e) {
-            System.out.println("way way" + e);
-            //results = e.toString();
-        }
-        return result;
-    }
-    
-    public String retrieve(String query) throws SQLException {
+    public String retrieveCurrentUserId(HttpSession session) throws SQLException{
+        String result = "";
+        String query = "SELECT ID FROM USERS WHERE USERNAME = '" + session.getAttribute("username") + "'";
         select(query);
+        ArrayList<Object> ids = rsToList();
         
-        if (query.contains("jrny.destination, jrny.distance, jrny.date, jrny.time, jrny.registration")) {
-            return makeJourneysTable(rsToList());
+        if (ids == null || ids.isEmpty()) {
+            System.out.println("No user found");
+        } else if (ids.size() > 1) {
+            System.out.println("More than one user identified");
         }
-        else if (query.contains("select jid, journey.registration, destination, distance, date, time from journey")) {
-            return makeDriverJourneysTable(rsToList());
+        
+        for (Object s : ids) {
+                String[] row = (String[]) s;
+                for (String row1 : row) {
+                    result = String.valueOf(row1);
+                }
         }
-        else if (query.contains("SELECT CUSTOMERNAME, JRNY.DESTINATION, PRICE FROM INVOICES")) {
-            return makeOperationsTable(rsToList());
+        
+        return result;
+    }
+    
+    public int retrieveNextSessionID(){
+        String query = "SELECT MAX(ID) FROM SESSION";
+        int result = 0;
+        try {
+            statement = connection.createStatement();
+            rs = statement.executeQuery(query);
+            
+            for (Object s : rsToList()) {
+                String[] row = (String[]) s;
+                for (String row1 : row) {
+                    result = Integer.valueOf(row1) + 1;
+                }
+            }
         }
-        else if (query.contains("id") && query.contains("demands")) {
-            return makeBookingsTable(rsToList());
-        } 
-        else if (query.contains("users")) {
+        catch(SQLException e) {
+            System.out.println("way way"+e);
+            //results = e.toString();
+        }
+        return result;
+    }
+    
+    public String retrieve(String query, HttpSession session) throws SQLException {
+        select(query);
+        if (query.contains("users")) {
             return makeUsersTable(rsToList());
-        }
-        else if(query.contains("drivers")) {
-            return makeDriverTable(rsToList());
-        }
-        else if(query.contains("INVOICES") || query.contains("invoices")){
-            return makeInvoiceTable(rsToList());
-        }
-        else if (query.contains("name, address, destination, date, time, status")) {
-            return makeUserBookingsTable(rsToList());
+        } else if (query.contains("SELECT MODULE, ROOM, TIME, REFERENCE FROM SESSION")) {
+            return makeSessionsTable(rsToList(), session);
         }
         
         return makeTable(rsToList());
@@ -499,6 +227,13 @@ public class Jdbc {
     
     public String[] retrieveQueryWithStringArray(String query){
       return RunQuery(query);
+    }
+    
+    public String[] retrieveSessionDetails(String sessionReference) {
+        String query = "SELECT MODULE, ROOM, TIME FROM SESSION WHERE REFERENCE = '" + sessionReference + "'";
+        String[] sessionDetails = retrieveQueryWithStringArray(query);
+        
+        return sessionDetails;
     }
     
     public String[] RunQuery(String qry){
@@ -532,98 +267,17 @@ public class Jdbc {
         }
         return bool;
     }
-    
-    public boolean existsInDemands(String demandID) {
-        boolean bool = false;
-        try  {
-            select("select ID from DEMANDS where id="+demandID);
-            if(rs.next()) {
-                System.out.println("TRUE");         
-                bool = true;
-            }
-        } catch (SQLException ex) {
-            Logger.getLogger(Jdbc.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return bool;
-    }
-    
-    public boolean existsInDriver(String driverReg) {
-        boolean bool = false;
-        try  {
-            select("select registration from drivers where registration='"+driverReg+"'");
-            if(rs.next()) {
-                System.out.println("TRUE");         
-                bool = true;
-            }
-        } catch (SQLException ex) {
-            Logger.getLogger(Jdbc.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return bool;
-    }
-    
-    public String[] getTimeFromDemands(String id) {
-        String[] result = new String[2];
-        int index = 0;
-        try  {
-            select("select date, time from demands where id="+id);
             
-            for (Object s : rsToList()) {
-                String[] row = (String[]) s;
-                for (String row1 : row) {
-                    result[index++] = row1;
-                }
-            }
-        } catch (SQLException ex) {
-            Logger.getLogger(Jdbc.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return result;
-    }
-    
-    public boolean doesTimeExistInJourney(String[] query) {
-        boolean bool = false;
-        try  {
-            select("select time from journey where registration='"+query[0]+"' And date = '" + query[1] + "' AND time ='" + query[2] + "'");
-            if(rs.next()) {
-                System.out.println("TRUE");         
-                bool = true;
-            }
-        } catch (SQLException ex) {
-            Logger.getLogger(Jdbc.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return bool;
-    }
-    
-    public boolean doesABookingExist(String date, String time) {
-        boolean bool = false;
-        try  {
-            select("select date, time from demands where date='"+date+ "' " +  "AND" +
-                    "time='" + time +"'");
-            if(rs.next()) {
-                System.out.println("TRUE");         
-                bool = true;
-            }
-        } catch (SQLException ex) {
-            Logger.getLogger(Jdbc.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return bool;
-    }
-    
     public boolean insertUser(String[] str){
         PreparedStatement ps = null;
         boolean success = false;
         try {
-            ps = connection.prepareStatement("INSERT INTO Users VALUES (?,?,?,?)",PreparedStatement.RETURN_GENERATED_KEYS);
+            ps = connection.prepareStatement("INSERT INTO Users VALUES (?,?,?,?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
             ps.setString(1, str[0].trim()); 
-            ps.setString(2, str[1].trim());
-            
-            // If a new customer account is being created then they won't be able to specify a userType
-            // so we set the userType to customer
-            if (str[2] == null) {
-                str[2] = "customer";
-            }
-            
+            ps.setString(2, str[1].trim());            
             ps.setString(3, str[2].trim());
-            ps.setString(4, String.valueOf(retrieveNextID()));
+            ps.setString(4, str[3].trim());
+            ps.setString(5, String.valueOf(retrieveNextID()));
             success = ps.executeUpdate() != 0;
         
             ps.close();
@@ -634,78 +288,74 @@ public class Jdbc {
          return success;
     }
     
-    public boolean insertInvoice(String[] str){
+    public boolean insertSession(String[] str, HttpSession session){
         PreparedStatement ps = null;
         boolean success = false;
         try {
-            ps = connection.prepareStatement("INSERT INTO INVOICES VALUES (?,?,?,?,?,?,?,?)",PreparedStatement.RETURN_GENERATED_KEYS);
-            ps.setString(1, String.valueOf(retrieveNextInvoiceID())); 
-            ps.setString(2, str[0].trim());
+            ps = connection.prepareStatement("INSERT INTO SESSION VALUES (?,?,?,?,?,?)", PreparedStatement.RETURN_GENERATED_KEYS);
+            ps.setString(1, String.valueOf(retrieveNextSessionID())); 
+            ps.setString(2, str[0].trim());            
             ps.setString(3, str[1].trim());
             ps.setString(4, str[2].trim());
-            ps.setString(5, str[3].trim());
-            ps.setString(6, str[4].trim());
-            ps.setString(7, str[5].trim());
-            ps.setString(8, str[6].trim());
+            ps.setString(5, retrieveCurrentUserId(session));
+            ps.setString(6, generateSessionReference());
             success = ps.executeUpdate() != 0;
         
             ps.close();
-            System.out.println("1 row added.");
+            System.out.println("1 session added.");
         } catch (SQLException ex) {
             Logger.getLogger(Jdbc.class.getName()).log(Level.SEVERE, null, ex);
         }
          return success;
     }
     
-    public boolean insertJourney(String[] str){
-        PreparedStatement ps = null;
-        boolean success = false;
-        try {
-          String[] demandDetails = GetBookingDetails(str[0]);
-            ps = connection.prepareStatement("INSERT INTO journey VALUES (?,?,?,?,?,?,?)",PreparedStatement.RETURN_GENERATED_KEYS);
-            ps.setString(1, String.valueOf(retrieveNextJourneyID()));
-            ps.setString(2, str[0].trim()); //     Demand ID
-            ps.setString(3, demandDetails[0]); //  Destination
-            ps.setString(4, str[2]); //            Distance
-            ps.setString(5, str[1]); //            Registration
-            ps.setString(6, demandDetails[1]); //  Date
-            ps.setString(7, demandDetails[2]); //  Time
-            success = ps.executeUpdate() != 0;
-            
-            if(success){
-              String[] updateDemands = {"Assigned", str[0]};
-              updateDemands(updateDemands);
-            }
-        
-            ps.close();
-            System.out.println("1 row added.");
-        } catch (SQLException ex) {
-            Logger.getLogger(Jdbc.class.getName()).log(Level.SEVERE, null, ex);
+    public String generateSessionReference() throws SQLException {
+        // chose a Character random from this String 
+        String AlphaNumericString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                                    + "0123456789"
+                                    + "abcdefghijklmnopqrstuvxyz"; 
+  
+        // create StringBuffer size of AlphaNumericString 
+        StringBuilder sb = new StringBuilder(16); 
+  
+        for (int i = 0; i < 16; i++) { 
+  
+            // generate a random number between 
+            // 0 to AlphaNumericString variable length 
+            int index 
+                = (int)(AlphaNumericString.length() 
+                        * Math.random()); 
+  
+            // add Character one by one in end of sb 
+            sb.append(AlphaNumericString 
+                          .charAt(index)); 
         }
-         return success;
+        
+        if (!(validateReference(sb.toString()))) {
+            generateSessionReference();
+        }            
+  
+        return sb.toString(); 
     }
     
-    public boolean insertBooking(String[] str){
-        PreparedStatement ps = null;
-        boolean success = false;
-        try {
-            ps = connection.prepareStatement("INSERT INTO demands VALUES (?,?,?,?,?,?,?,?)",PreparedStatement.RETURN_GENERATED_KEYS);
-            ps.setString(1, String.valueOf(retrieveNextBookingID())); // Sets the ID.
-            ps.setString(2, str[0].trim()); // Sets the Name.
-            ps.setString(3, str[1].trim()); // Sets The Address.
-            ps.setString(4, str[2].trim()); // Sets the Destination.
-            ps.setString(5, str[3].trim()); // Sets the date.
-            ps.setString(6, str[4].trim()); // Sets the time.
-            ps.setString(7, "Outstanding"); // Sets the status.
-            ps.setString(8, str[0].trim()); // Sets the Booked_By.
-            success = ps.executeUpdate() != 0;
+    public boolean validateReference(String reference) throws SQLException {
+        String query = "SELECT REFERENCE FROM SESSION";
+        select(query);
+        ArrayList<Object> references = rsToList();
         
-            ps.close();
-            System.out.println("1 row added.");
-        } catch (SQLException ex) {
-            Logger.getLogger(Jdbc.class.getName()).log(Level.SEVERE, null, ex);
+        for (Object s : references) {
+                String[] row = (String[]) s;
+                for (String row1 : row) {
+                    String currentRef = String.valueOf(row1);
+                    // Check if reference has already been generated
+                    if (currentRef.equals(reference)) {
+                        return false;
+                    }
+                    
+                }
         }
-         return success;
+        
+        return true;
     }
     
     public void update(String[] str) {
@@ -723,45 +373,17 @@ public class Jdbc {
         }
     }
     
-    public void updateDemands(String[] str) {
-        PreparedStatement ps = null;
-        try {
-            ps = connection.prepareStatement("Update DEMANDS Set STATUS=? where ID=?",PreparedStatement.RETURN_GENERATED_KEYS);
-            ps.setString(1, str[0].trim()); 
-            ps.setString(2, str[1].trim());
-            ps.executeUpdate();
-        
-            ps.close();
-            System.out.println("1 rows updated.");
-        } catch (SQLException ex) {
-            Logger.getLogger(Jdbc.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-    
-    public void updateTableWithQuery(String query) {
+    public boolean updateTableWithQuery(String query) {
         PreparedStatement ps = null;
         try {
             ps = connection.prepareStatement(query,PreparedStatement.RETURN_GENERATED_KEYS);
             ps.executeUpdate();
-        
             ps.close();
             System.out.println("1 rows updated.");
+            return true;
         } catch (SQLException ex) {
             Logger.getLogger(Jdbc.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-        
-    public void updatePrices(String[] qry) {
-      PreparedStatement ps = null;
-        try {
-            ps = connection.prepareStatement("Update PRICING Set price=?",PreparedStatement.RETURN_GENERATED_KEYS);
-            ps.setString(1, qry[0].trim()); 
-            ps.executeUpdate();
-        
-            ps.close();
-            System.out.println("1 rows updated.");
-        } catch (SQLException ex) {
-            Logger.getLogger(Jdbc.class.getName()).log(Level.SEVERE, null, ex);
+            return false;
         }
     }
     
@@ -779,24 +401,7 @@ public class Jdbc {
             //results = e.toString();
         }
     }
-    
-    public String[] GetBookingDetails(String id) {
-        String[] results = new String[3];
-        int index = 0;
-        try  {
-            select("select destination, date, time from demands where id = " + id);
-            for (Object s : rsToList()) {
-                String[] row = (String[]) s;
-                for (String row1 : row) {
-                    results[index++] = row1;
-                }
-            }
-        } catch (SQLException ex) {
-            Logger.getLogger(Jdbc.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return results;
-    }
-    
+        
     public boolean checkUser(String username, String password) {
         boolean bool = false;
         try  {
@@ -838,7 +443,6 @@ public class Jdbc {
         }
         jdbc.connect(conn);
         String [] users = {"eaydin","benim","benim"};
-        System.out.println(jdbc.retrieve(str));
         if (!jdbc.exists(users[0]))
             jdbc.insertUser(users);            
         else {
@@ -847,7 +451,6 @@ public class Jdbc {
         }
         jdbc.delete("aydinme");
         
-        System.out.println(jdbc.retrieve(str));
         jdbc.closeAll();
     }            
 }
