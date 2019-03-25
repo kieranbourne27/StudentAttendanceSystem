@@ -13,11 +13,11 @@
         <title>Change Password</title>
     </head>
     <body>
-<%
-    if(session.getAttribute("username") == null){
-        response.sendRedirect("index.jsp");
-    }
-%>
+    <%
+        if(session.getAttribute("username") == null){
+            response.sendRedirect("index.jsp");
+        }
+    %>
         <jsp:include page="header.jsp"/>
         <h1>Password change</h1>
            <form method="POST" action="Update.do">     
@@ -43,7 +43,7 @@
                 </tr>
             </table>
         </form>
-        <%=((String)(request.getAttribute("msg"))!=null)?(String)(request.getAttribute("msg")):""%>
+        <%=((String)(request.getAttribute("msg"))!=null) ? (String)(request.getAttribute("msg")):""%>
         <jsp:include page="foot.jsp"/>
     </body>
 </html>

@@ -18,6 +18,7 @@
     <form method="POST" action="UserService.do">
         <button type="submit" name="tbl" value="ManageSessions" class="btn-link">Manage Sessions</button>
         <button type="submit" name="tbl" value="TakeAttendance" class="btn-link">Take Attendance</button>
+        <button type="submit" name="tbl" value="ViewAttendance" class="btn-link">View Attendance</button>
         <button type="submit" name="tbl" value="Update" class="btn-link">Change Password</button>
     </form>
 <%}else if (session.getAttribute("userType").toString().trim().equals("Student")) {%>
@@ -26,6 +27,5 @@
         <button type="submit" name="tbl" value="Update" class="btn-link">Edit Details</button>
     </form>
 <%}%>
-
  </div></br></br>
 

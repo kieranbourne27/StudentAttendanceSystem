@@ -26,6 +26,7 @@
             </table>
         </form>
         <hr>
+        <%=((String)(request.getAttribute("msg"))!=null) ? (String)(request.getAttribute("msg")):""%>
         <jsp:include page="foot.jsp"/>
     </body>
 </html>

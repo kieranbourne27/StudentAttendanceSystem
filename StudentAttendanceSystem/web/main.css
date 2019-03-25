@@ -1,28 +1,24 @@
 .displayInvoices table, 
 .displayUsers table, 
-.displaySessions table {
-    border-collapse: collapse;
-    width: 100%;
-}
-
-.displayDrivers table {
+.displaySessions table,
+.displayAttendanceRecords table,
+.displayAttendeeRecords table {
     border-collapse: collapse;
     width: 100%;
 }
 
 .displayUsers th, td, 
-.displaySessions th, td {
-    padding: 8px;
-    text-align: left;
-}
-
-.displayDrivers th, td {
+.displaySessions th, td,
+.displayAttendanceRecords th, td,
+.displayAttendeeRecords th, td {
     padding: 8px;
     text-align: left;
 }
 
 .displayUsers tr:hover, 
-.displaySessions tr:hover {
+.displaySessions tr:hover,
+.displayAttendanceRecords tr:hover,
+.displayAttendeeRecords tr:hover {
     background-color:#ffffcc;
 }
 
@@ -31,11 +27,26 @@
     left: 0;
     bottom: 0;
     width: 100%;
-    height: 35px;
-    background-color: #ffff66;
+    height: 50px;
+    background-color: #223fe5;
     color: white;
     text-align: center;
-    padding-top: 15px;
+}
+
+.footer button {
+  color: white;
+  text-align: center;
+  padding: 12px;
+  text-decoration: none;
+  font-size: 18px;
+  font-family: Arial;
+  line-height: 25px;
+  border-radius: 4px;
+}
+
+.footer button:hover {
+  background-color: #3675db;
+  color: black;
 }
 
 .header {
@@ -43,11 +54,35 @@
     top: 0;
     left: 0;
     width: 100%;
-    height: 35px;
-    background-color: #ffff66;
-    color: black;
+    height: 50px;
     text-align: center;
-    padding-top: 15px;
+    background-color: #223fe5;
+}
+
+.header button {
+  color: white;
+  text-align: center;
+  padding: 12px;
+  text-decoration: none;
+  font-size: 18px;
+  font-family: Arial;
+  line-height: 25px;
+  border-radius: 4px;
+}
+
+.header button.logo {
+  font-size: 25px;
+  font-weight: bold;
+}
+
+.header button:hover {
+  background-color: #3675db;
+  color: black;
+}
+
+.header button.active {
+  background-color: dodgerblue;
+  color: white;
 }
 
 .loginForm {

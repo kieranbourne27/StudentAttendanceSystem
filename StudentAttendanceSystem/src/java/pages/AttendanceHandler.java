@@ -5,12 +5,16 @@
  */
 package pages;
 
+import com.UserServLet;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -34,7 +38,7 @@ public class AttendanceHandler extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+            throws ServletException, IOException, SQLException {
         response.setContentType("text/html;charset=UTF-8");
         HttpSession session = request.getSession(false);
 
@@ -56,15 +60,71 @@ public class AttendanceHandler extends HttpServlet {
                 request.setAttribute("clearAttendees", "false");
                 request.getRequestDispatcher("/WEB-INF/recordAttendance.jsp").forward(request, response);
                 break;
+            case "SubmitRegister":
+                attendanceList = (List) session.getAttribute("attendanceList");
+                boolean result = dbBean.createAttendanceRecord((String) session.getAttribute("module"), (String) session.getAttribute("sessionReference"));
+                String attendanceRecordID = dbBean.getLatestAttendanceRecordID();
+                dbBean.generateAttendeeRecords(attendanceList, attendanceRecordID);
+                if (result){
+                    request.setAttribute("msg", "Register successfully submitted");
+                } else {
+                    request.setAttribute("msg", "Register failed to be submitted");
+                }
+                getSessionsForUser(session, request, response);
+                request.getRequestDispatcher("/WEB-INF/takeAttendance.jsp").forward(request, response);
+                break;
+            case "ViewAttendance":
+                String sessionID = dbBean.getSessionIDFromReference(request.getParameter("sessionReference"));
+                String attendanceRecords = dbBean.getAttendanceRecordsForSession(sessionID, session);
+                request.setAttribute("attendanceRecordsTable", attendanceRecords);
+                session.setAttribute("attendanceRecordsTable", attendanceRecords);
+                getSessionsForUser(session, request, response);
+                break;
+            case "ViewAttendees":
+                request.setAttribute("attendanceRecordsTable", session.getAttribute("attendanceRecordsTable"));
+                String selectedAttendanceRecordID = dbBean.getAttendanceRecordIDFromReference(request.getParameter("attendanceRecordReference"));
+                String attendees = dbBean.getAttendeesForAttendanceRecord(selectedAttendanceRecordID, session);
+                request.setAttribute("attendeesTable", attendees);
+                getSessionsForUser(session, request, response);
+                break;
             default:
                 List<String> sessionDetails = Arrays.asList(dbBean.retrieveSessionDetails(request.getParameter("sessionReference")));
                 session.setAttribute("module", sessionDetails.get(0));
                 session.setAttribute("room", sessionDetails.get(1));
                 session.setAttribute("time", sessionDetails.get(2));
+                session.setAttribute("sessionReference", request.getParameter("sessionReference"));
                 request.setAttribute("clearAttendees", "true");
                 request.getRequestDispatcher("/WEB-INF/recordAttendance.jsp").forward(request, response);
                 break;
         }
+    }
+    
+    private void getSessionsForUser(HttpSession session,  HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException{
+        String msg = "No sessions";
+        String query = "SELECT MODULE, ROOM, TIME, REFERENCE FROM SESSION "
+                + "JOIN USERS ON USERS.ID = SESSION.OWNER_ID "
+                + "WHERE USERS.USERNAME = '" + session.getAttribute("username") + "'";
+        String result = requestData(session, msg, query);
+        
+        request.setAttribute("sessionTable", result);
+        if (request.getParameter("tbl").equals("ManageSessions")) {
+            request.getRequestDispatcher("/WEB-INF/manageSessions.jsp").forward(request, response);
+        } else if (request.getParameter("tbl").equals("TakeAttendance")) {
+            request.getRequestDispatcher("/WEB-INF/takeAttendance.jsp").forward(request, response);
+        } else  {
+            request.getRequestDispatcher("/WEB-INF/viewAttendance.jsp").forward(request, response);
+        }
+    }
+    
+    private String requestData(HttpSession session, String msg, String qry) {
+        try {
+            Jdbc dbBean = (Jdbc) session.getAttribute("dbbean");
+            msg = dbBean.retrieve(qry, session);
+        } catch (SQLException ex) {
+            Logger.getLogger(UserServLet.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return msg;
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
@@ -79,7 +139,11 @@ public class AttendanceHandler extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        try {
+            processRequest(request, response);
+        } catch (SQLException ex) {
+            Logger.getLogger(AttendanceHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**
@@ -93,7 +157,11 @@ public class AttendanceHandler extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        try {
+            processRequest(request, response);
+        } catch (SQLException ex) {
+            Logger.getLogger(AttendanceHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**

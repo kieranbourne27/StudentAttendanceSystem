@@ -12,6 +12,7 @@ import java.sql.Time;
 import static java.sql.Types.NULL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpSession;
@@ -99,6 +100,53 @@ public class Jdbc {
         b.append("<th>Room</th>");
         b.append("<th>Time</th>");
         b.append("<th>Reference</th>");
+        b.append("<tr>");
+        
+        for (Object s : list) {
+          b.append("<tr>");
+          row = (String[]) s;
+            for (String row1 : row) {
+                b.append("<td>");
+                b.append(row1);
+                b.append("</td>");
+            }
+          b.append("</tr>\n");
+        } // for
+        b.append("</table>");
+        return b.toString();
+    }//makeHtmlTable
+    
+    private String makeAttendanceRecordsTable(ArrayList list, HttpSession session) {
+        StringBuilder b = new StringBuilder();
+        String[] row;
+        b.append("<table border=\"3\">");
+        
+        b.append("<tr>");
+        b.append("<th>Reference</th>");
+        b.append("<tr>");
+        
+        for (Object s : list) {
+          b.append("<tr>");
+          row = (String[]) s;
+            for (String row1 : row) {
+                b.append("<td>");
+                b.append(row1);
+                b.append("</td>");
+            }
+          b.append("</tr>\n");
+        } // for
+        b.append("</table>");
+        return b.toString();
+    }//makeHtmlTable
+    
+    private String makeAttendeesTable(ArrayList list, HttpSession session) {
+        StringBuilder b = new StringBuilder();
+        String[] row;
+        b.append("<table border=\"3\">");
+        
+        b.append("<tr>");
+        b.append("<th>Name</th>");
+        b.append("<th>Student Number</th>");
         b.append("<tr>");
         
         for (Object s : list) {
@@ -214,12 +262,64 @@ public class Jdbc {
         return result;
     }
     
+    public int retrieveNextAttendanceRecordID(){
+        String query = "SELECT MAX(ID) FROM ATTENDANCE_RECORD";
+        int result = 0;
+        try {
+            statement = connection.createStatement();
+            rs = statement.executeQuery(query);
+            
+            for (Object s : rsToList()) {
+                String[] row = (String[]) s;
+                for (String row1 : row) {
+                    if (row1 == null) {
+                        return 1;
+                    } 
+                    result = Integer.valueOf(row1) + 1;
+                }
+            }
+        }
+        catch(SQLException e) {
+            System.out.println("way way"+e);
+            //results = e.toString();
+        }
+        return result;
+    }
+    
+    public int retrieveNextAttendeeRecordID(){
+        String query = "SELECT MAX(ID) FROM ATTENDEE_RECORD";
+        int result = 0;
+        try {
+            statement = connection.createStatement();
+            rs = statement.executeQuery(query);
+            
+            for (Object s : rsToList()) {
+                String[] row = (String[]) s;
+                for (String row1 : row) {
+                    if (row1 == null) {
+                        return 1;
+                    } 
+                    result = Integer.valueOf(row1) + 1;
+                }
+            }
+        }
+        catch(SQLException e) {
+            System.out.println("way way"+e);
+            //results = e.toString();
+        }
+        return result;
+    }
+    
     public String retrieve(String query, HttpSession session) throws SQLException {
         select(query);
         if (query.contains("users")) {
             return makeUsersTable(rsToList());
         } else if (query.contains("SELECT MODULE, ROOM, TIME, REFERENCE FROM SESSION")) {
             return makeSessionsTable(rsToList(), session);
+        } else if (query.contains("SELECT REFERENCE FROM ATTENDANCE_RECORD")) {
+            return makeAttendanceRecordsTable(rsToList(), session);
+        } else if (query.contains("SELECT USERS.NAME, USERS.STUDENTNUMBER FROM ATTENDEE_RECORD")) {
+            return makeAttendeesTable(rsToList(), session);
         }
         
         return makeTable(rsToList());
@@ -338,8 +438,57 @@ public class Jdbc {
         return sb.toString(); 
     }
     
+    public String generateAttendanceRecordReference() throws SQLException {
+        // chose a Character random from this String 
+        String AlphaNumericString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                                    + "0123456789"
+                                    + "abcdefghijklmnopqrstuvxyz"; 
+  
+        // create StringBuffer size of AlphaNumericString 
+        StringBuilder sb = new StringBuilder(16); 
+  
+        for (int i = 0; i < 16; i++) { 
+  
+            // generate a random number between 
+            // 0 to AlphaNumericString variable length 
+            int index 
+                = (int)(AlphaNumericString.length() 
+                        * Math.random()); 
+  
+            // add Character one by one in end of sb 
+            sb.append(AlphaNumericString 
+                          .charAt(index)); 
+        }
+        
+        if (!(validateAttendanceRecordReference(sb.toString()))) {
+            generateAttendanceRecordReference();
+        }            
+  
+        return sb.toString(); 
+    }
+    
     public boolean validateReference(String reference) throws SQLException {
         String query = "SELECT REFERENCE FROM SESSION";
+        select(query);
+        ArrayList<Object> references = rsToList();
+        
+        for (Object s : references) {
+                String[] row = (String[]) s;
+                for (String row1 : row) {
+                    String currentRef = String.valueOf(row1);
+                    // Check if reference has already been generated
+                    if (currentRef.equals(reference)) {
+                        return false;
+                    }
+                    
+                }
+        }
+        
+        return true;
+    }
+    
+    public boolean validateAttendanceRecordReference(String reference) throws SQLException {
+        String query = "SELECT REFERENCE FROM ATTENDANCE_RECORD";
         select(query);
         ArrayList<Object> references = rsToList();
         
@@ -413,6 +562,80 @@ public class Jdbc {
             Logger.getLogger(Jdbc.class.getName()).log(Level.SEVERE, null, ex);
         }
         return bool;
+    }
+    
+    public boolean createAttendanceRecord(String module, String sessionReference) {
+        PreparedStatement ps = null;
+        boolean success = false;
+        try {
+            ps = connection.prepareStatement("INSERT INTO ATTENDANCE_RECORD VALUES (?,?,?,?)", PreparedStatement.RETURN_GENERATED_KEYS);
+            ps.setString(1, String.valueOf(retrieveNextAttendanceRecordID()));
+            ps.setString(2, generateAttendanceRecordReference());
+            ps.setString(3, module);
+            ps.setString(4, getSessionIDFromReference(sessionReference));
+            
+            success = ps.executeUpdate() != 0;
+            ps.close();
+            System.out.println("1 attendance record added.");
+        } catch (SQLException ex) {
+            Logger.getLogger(Jdbc.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return success;
+    }
+    
+    public String getLatestAttendanceRecordID() {
+        String query = "SELECT ID FROM ATTENDANCE_RECORD ORDER BY ID DESC FETCH FIRST 1 ROWS ONLY";
+        String[] latestID = retrieveQueryWithStringArray(query);
+        
+        return latestID[0];
+    }
+    
+    public void generateAttendeeRecords(List<String> attendees, String attendanceRecordID){
+        PreparedStatement ps = null;
+        try {
+            for (String attendee : attendees) {
+                ps = connection.prepareStatement("INSERT INTO ATTENDEE_RECORD VALUES (?,?,?)", PreparedStatement.RETURN_GENERATED_KEYS);
+                ps.setString(1, String.valueOf(retrieveNextAttendeeRecordID())); 
+                ps.setString(2, attendee);            
+                ps.setString(3, attendanceRecordID);
+                ps.executeUpdate();
+            }
+        
+            ps.close();
+            System.out.println("1 session added.");
+        } catch (SQLException ex) {
+            Logger.getLogger(Jdbc.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    public String getSessionIDFromReference(String sessionReference) { 
+        String query = "SELECT ID FROM SESSION WHERE REFERENCE = '" + sessionReference + "'";
+        String[] sessionID = retrieveQueryWithStringArray(query);
+        
+        return sessionID[0];
+    }
+    
+    public String getAttendanceRecordIDFromReference(String attendanceRecordReference) { 
+        String query = "SELECT ID FROM ATTENDANCE_RECORD WHERE REFERENCE = '" + attendanceRecordReference + "'";
+        String[] sessionID = retrieveQueryWithStringArray(query);
+        
+        return sessionID[0];
+    }
+    
+    public String getAttendanceRecordsForSession(String sessionID, HttpSession session) throws SQLException {
+        String query = "SELECT REFERENCE FROM ATTENDANCE_RECORD WHERE SESSION_ID = " + sessionID;
+        String attendanceRecords = retrieve(query, session);
+        
+        return attendanceRecords;
+    }
+    
+    public String getAttendeesForAttendanceRecord(String attendanceRecordID, HttpSession session) throws SQLException {
+        String query = "SELECT USERS.NAME, USERS.STUDENTNUMBER FROM ATTENDEE_RECORD " +
+                       "JOIN USERS ON USERS.STUDENTNUMBER = ATTENDEE_RECORD.STUDENTNUMBER " + 
+                       "WHERE ATTENDEE_RECORD.ATTENDANCERECORD_ID = '" + attendanceRecordID + "'";
+        String attendanceRecords = retrieve(query, session);
+        
+        return attendanceRecords;
     }
     
     public void closeAll(){

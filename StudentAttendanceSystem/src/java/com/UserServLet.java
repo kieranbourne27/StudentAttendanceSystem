@@ -71,6 +71,9 @@ public class UserServLet extends HttpServlet {
             case "TakeAttendance":
                 getSessionsForUser(session, request, response);
                 break;
+            case "ViewAttendance":
+                getSessionsForUser(session, request, response);
+                break;
             default:
                 request.getRequestDispatcher("/WEB-INF/portal.jsp").forward(request, response);
                 break;
@@ -121,8 +124,10 @@ public class UserServLet extends HttpServlet {
         request.setAttribute("sessionTable", result);
         if (request.getParameter("tbl").equals("ManageSessions")) {
             request.getRequestDispatcher("/WEB-INF/manageSessions.jsp").forward(request, response);
-        } else {
+        } else if (request.getParameter("tbl").equals("TakeAttendance")) {
             request.getRequestDispatcher("/WEB-INF/takeAttendance.jsp").forward(request, response);
+        } else {
+            request.getRequestDispatcher("/WEB-INF/viewAttendance.jsp").forward(request, response);
         }
     }
     
