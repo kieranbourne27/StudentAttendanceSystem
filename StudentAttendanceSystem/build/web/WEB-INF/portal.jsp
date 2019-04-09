@@ -13,15 +13,13 @@
     if(session.getAttribute("username") == null){
         response.sendRedirect("index.jsp");
     }
-%>
-        
+%>     
         <jsp:include page="header.jsp"/>
-        <p><b><%
-        if (session.getAttribute("username") != null) {
-            out.println("Currently logged in as: " + session.getAttribute("username"));
-        }
-        %></b></p>
-        <h1>Welcome to the portal page</h1>
+        <h1>Welcome to the student attendance system</h1>
+        <h2>About</h2>
+        <p style="font-size: large">The student attendance system has been developed to provide lecturers and students with a system that allows them to monitor and track attendance.<br>
+           Users can make use of dynamic graphs that provide a visual representation of attendance figures contained within the system.
+        </p>
         <jsp:include page="foot.jsp"/>
     </body>
 </html>

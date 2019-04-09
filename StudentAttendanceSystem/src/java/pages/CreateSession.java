@@ -63,6 +63,9 @@ public class CreateSession extends HttpServlet {
         query[0] = (String) request.getParameter("module");
         query[1] = (String) request.getParameter("room");
         query[2] = (String) request.getParameter("time");
+        if (request.getSession().getAttribute("userType").equals("Admin")) {
+            query[3] = (String) request.getParameter("lecturer");
+        }
 
         return query;
     }
@@ -72,6 +75,9 @@ public class CreateSession extends HttpServlet {
         String query = "SELECT MODULE, ROOM, TIME, REFERENCE FROM SESSION "
                 + "JOIN USERS ON USERS.ID = SESSION.OWNER_ID "
                 + "WHERE USERS.USERNAME = '" + session.getAttribute("username") + "'";
+        if (session.getAttribute("userType").equals("Admin")) {
+            query = "SELECT MODULE, ROOM, TIME, REFERENCE FROM SESSION";
+        }
         String result = requestData(session, msg, query);
         
         request.setAttribute("sessionTable", result);

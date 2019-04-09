@@ -17,9 +17,9 @@
         <jsp:include page="header.jsp"/>
         <div>
             <div>
-                <h2>Recording Attendance for <%=session.getAttribute("module")%></h2>
+                <h2>Recording Attendance for <%=session.getAttribute("module")%> (<%=session.getAttribute("sessionDate")%>)</h2>
                 <form method="POST" action="AttendanceHandler.do">
-                    <h3>Please scan the student card barcode and then submit</h3>
+                    <h3>Please scan the student card barcode and then add the student</h3>
                     <table>
                         <tbody>
                             <tr>
@@ -31,7 +31,15 @@
                     </table>
                 </form>
             </div>
+            <%
+                    if (request.getAttribute("message") != null) {
+                        out.println(request.getAttribute("message"));
+                    }
+            %>
             <hr>
+            <%
+            if (session.getAttribute("attendanceList") != null) {
+            %>
             <div id="registeredStudents" class="registeredStudents">
                 <h3>Current students registered for this session</h3>
                 <p>
@@ -45,6 +53,7 @@
             </div>
         </div>
         <%
+            }
             boolean clearAttendees = Boolean.parseBoolean((String) request.getAttribute("clearAttendees"));
             if (clearAttendees) {
                 session.removeAttribute("attendanceList");
@@ -55,6 +64,7 @@
         <%
             }
         %>
+        <br>
         <jsp:include page="foot.jsp"/>
     </body>
 </html>

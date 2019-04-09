@@ -25,13 +25,10 @@
                 str = "Delete";
                 url = "Delete.do";
         %>
-        <h1>Delete User details:</h1>
+        <h1>Delete A User</h1>
+        <h2>Please select the username of the user you wish to delete</h2>
         <form method="POST" action="<%=url%>">     
             <table>
-                <tr>
-                    <th></th>
-                    <th>Select Username:</th>
-                </tr>
                 <tr>
                     <td>
                         <select name="username">
@@ -55,13 +52,10 @@
                 str="Register";
                 url = "NewUser.do";
         %>
-        <h1>User's details:</h1>
+        <h1>Create A User</h1>
+        <h2>Please enter the following details for the user</h2>
         <form method="POST" action="<%=url%>">     
             <table id="newUserTable">
-                <tr>
-                    <th></th>
-                    <th>Please provide the following details</th>
-                </tr>
                 <tbody>
                     <tr>
                         <td>Username:</td>
@@ -88,6 +82,10 @@
                     <tr id="studentNumberRow">
                         <td>Student Number:</td>
                         <td><input type="text" name="studentNumber" required</td>
+                    </tr>
+                    <tr>
+                        <td>I understand that my personal data will be held and used within the attendance system</td>
+                        <td><input type="checkbox" required=""></td>
                     </tr>
                 </tbody
                 <tr> 

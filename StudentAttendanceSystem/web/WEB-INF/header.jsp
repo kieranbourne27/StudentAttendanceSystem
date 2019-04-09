@@ -8,10 +8,10 @@
  <%
      if (session.getAttribute("userType").toString().trim().equals("Admin")) {
  %>
-        <button type="submit" name="tbl" value="List" class="btn-link"> List Users <b>|</b></button>
-        <button type="submit" name="tbl" value="NewUser" class="btn-link"> Create User <b>|</b></button>
-        <button type="submit" name="tbl" value="Delete" class="btn-link"> Delete User <b>|</b></button>
-        <button type="submit" name="tbl" value="ManageSessions" class="btn-link"> Manage Sessions <b>|</b></button>
+        <button type="submit" name="tbl" value="List" class="btn-link"> List Users</button>
+        <button type="submit" name="tbl" value="NewUser" class="btn-link"> Create User</button>
+        <button type="submit" name="tbl" value="Delete" class="btn-link"> Delete User</button>
+        <button type="submit" name="tbl" value="ManageSessions" class="btn-link"> Manage Sessions</button>
         <button type="submit" name="tbl" value="Update" class="btn-link"> Change Password</button>
     </form>
 <%}else if (session.getAttribute("userType").toString().trim().equals("Lecturer")) {%>

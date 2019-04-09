@@ -15,7 +15,7 @@
         <jsp:include page="header.jsp"/>
         <h1>List of all users:</h1>
         <div class = "displayUsers">
-            <%=(String)(request.getAttribute("query"))%>
+            <%=(String)(request.getAttribute("userList"))%>
         </div>
         <br>
         <jsp:include page="foot.jsp"/>

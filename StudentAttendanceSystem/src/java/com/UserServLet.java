@@ -33,9 +33,16 @@ public class UserServLet extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+            throws ServletException, IOException, SQLException {
 
         HttpSession session = request.getSession(false);
+        
+        Jdbc dbBean = new Jdbc();
+        dbBean.connect((Connection) request.getServletContext().getAttribute("connection"));
+        
+        if ((Connection) request.getServletContext().getAttribute("connection") == null) {
+            request.getRequestDispatcher("/WEB-INF/conErr.jsp").forward(request, response);
+        }
         
         if(session == null){
             response.sendRedirect("index.jsp");
@@ -66,13 +73,27 @@ public class UserServLet extends HttpServlet {
                 obtainPresentUsers(session, request, response);
                 break;
             case "ManageSessions":
-                getSessionsForUser(session, request, response);
+                session.removeAttribute("sessionReferenceError");
+                if (session.getAttribute("userType").equals("Admin")) {
+                    getSessionsForAdmin(session, request, response);
+                } else {
+                    getSessionsForUser(session, request, response);
+                }
                 break;
             case "TakeAttendance":
+                session.removeAttribute("sessionReferenceError");
                 getSessionsForUser(session, request, response);
                 break;
             case "ViewAttendance":
-                getSessionsForUser(session, request, response);
+                session.removeAttribute("sessionReferenceError");
+                if (session.getAttribute("userType").equals("Lecturer")) {
+                    session.removeAttribute("studentAttendanceTable");
+                    getSessionsForUser(session, request, response);
+                } else if (session.getAttribute("userType").equals("Student")) {
+                    session.removeAttribute("studentAttendancePercentage");
+                    String userID = dbBean.retrieveCurrentUserId(session);
+                    getSessionsForStudent(session, request, response, userID);
+                }
                 break;
             default:
                 request.getRequestDispatcher("/WEB-INF/portal.jsp").forward(request, response);
@@ -93,13 +114,13 @@ public class UserServLet extends HttpServlet {
             request.getRequestDispatcher("/WEB-INF/portal.jsp").forward(request, response);
         }
     }
-
+    
     private void listUsersAndUserTypes(HttpSession session, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         String msg = "No users";
         String qry = "SELECT USERNAME, USERTYPE FROM USERS";
         String result = requestData(session, msg, qry);
         
-        request.setAttribute("query", result);
+        request.setAttribute("userList", result);
         request.getRequestDispatcher("/WEB-INF/userList.jsp").forward(request, response);
     }
 
@@ -112,6 +133,21 @@ public class UserServLet extends HttpServlet {
         }
 
         return msg;
+    }
+    
+    private void getSessionsForAdmin(HttpSession session,  HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException{
+        String msg = "No sessions";
+        String query = "SELECT MODULE, ROOM, TIME, REFERENCE FROM SESSION";
+        String result = requestData(session, msg, query);
+        
+        request.setAttribute("sessionTable", result);
+        if (request.getParameter("tbl").equals("ManageSessions")) {
+            request.getRequestDispatcher("/WEB-INF/manageSessions.jsp").forward(request, response);
+        } else if (request.getParameter("tbl").equals("TakeAttendance")) {
+            request.getRequestDispatcher("/WEB-INF/takeAttendance.jsp").forward(request, response);
+        } else {
+            request.getRequestDispatcher("/WEB-INF/viewAttendance.jsp").forward(request, response);
+        }
     }
     
     private void getSessionsForUser(HttpSession session,  HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException{
@@ -129,6 +165,16 @@ public class UserServLet extends HttpServlet {
         } else {
             request.getRequestDispatcher("/WEB-INF/viewAttendance.jsp").forward(request, response);
         }
+    }
+    
+    private void getSessionsForStudent(HttpSession session,  HttpServletRequest request, HttpServletResponse response, String userID) throws ServletException, IOException {
+        String msg = "No sessions";
+        String query = "SELECT MODULE, ROOM, TIME, REFERENCE FROM REGISTEREDSTUDENTS " +
+        "JOIN SESSION ON SESSION.ID = REGISTEREDSTUDENTS.SESSION_ID " +
+        "WHERE REGISTEREDSTUDENTS.USER_ID = " + Integer.parseInt(userID);
+        String result = requestData(session, msg, query);
+        request.setAttribute("sessionTable", result);
+        request.getRequestDispatcher("/WEB-INF/viewAttendance.jsp").forward(request, response);
     }
     
     private String[] requestQueryWithStringArray(HttpSession session, String qry) {
@@ -151,7 +197,11 @@ public class UserServLet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        try {
+            processRequest(request, response);
+        } catch (SQLException ex) {
+            Logger.getLogger(UserServLet.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**
@@ -165,7 +215,11 @@ public class UserServLet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        try {
+            processRequest(request, response);
+        } catch (SQLException ex) {
+            Logger.getLogger(UserServLet.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**

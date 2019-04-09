@@ -10,11 +10,14 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Time;
 import static java.sql.Types.NULL;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.servlet.http.HttpSession;
 
 public class Jdbc {
@@ -92,6 +95,7 @@ public class Jdbc {
     
     private String makeSessionsTable(ArrayList list, HttpSession session) {
         StringBuilder b = new StringBuilder();
+        List<String> sessionList = new ArrayList<>();
         String[] row;
         b.append("<table border=\"3\">");
         
@@ -105,6 +109,7 @@ public class Jdbc {
         for (Object s : list) {
           b.append("<tr>");
           row = (String[]) s;
+          sessionList.add(row[3]);
             for (String row1 : row) {
                 b.append("<td>");
                 b.append(row1);
@@ -113,21 +118,25 @@ public class Jdbc {
           b.append("</tr>\n");
         } // for
         b.append("</table>");
+        session.setAttribute("sessionList", sessionList);
         return b.toString();
     }//makeHtmlTable
     
     private String makeAttendanceRecordsTable(ArrayList list, HttpSession session) {
         StringBuilder b = new StringBuilder();
+        List<String> attendanceRecordsList = new ArrayList<>();
         String[] row;
         b.append("<table border=\"3\">");
         
         b.append("<tr>");
-        b.append("<th>Reference</th>");
+        b.append("<th>Attendance Record Reference</th>");
+        b.append("<th>Session Date</th>");
         b.append("<tr>");
         
         for (Object s : list) {
           b.append("<tr>");
           row = (String[]) s;
+          attendanceRecordsList.add(row[0]);
             for (String row1 : row) {
                 b.append("<td>");
                 b.append(row1);
@@ -136,6 +145,7 @@ public class Jdbc {
           b.append("</tr>\n");
         } // for
         b.append("</table>");
+        session.setAttribute("attendanceRecordsList", attendanceRecordsList);
         return b.toString();
     }//makeHtmlTable
     
@@ -157,6 +167,81 @@ public class Jdbc {
                 b.append(row1);
                 b.append("</td>");
             }
+          b.append("</tr>\n");
+        } // for
+        b.append("</table>");
+        return b.toString();
+    }//makeHtmlTable
+    
+    private String makeUserAttendanceTable(ArrayList list, String totalSessions, HttpSession session) {
+        StringBuilder b = new StringBuilder();
+        String[] row;
+        b.append("<table border=\"3\">");
+        
+        b.append("<tr>");
+        b.append("<th>Sessions Attended</th>");
+        b.append("<th>Total Sessions</th>");
+        b.append("<th>Attendance Percentage</th>");
+        b.append("<tr>");
+        
+        for (Object s : list) {
+          b.append("<tr>");
+          row = (String[]) s;
+          for (int i = 0; i < row.length; i++) {
+            b.append("<td>");
+            b.append(row[i]);
+            b.append("</td>");
+            if (i == 0) {
+                b.append("<td>");
+                b.append(totalSessions);
+                b.append("</td>");
+            } 
+          }
+//            for (String row1 : row) {
+//                b.append("<td>");
+//                b.append(row1);
+//                b.append("</td>");
+//            }
+          b.append("</tr>\n");
+        } // for
+        b.append("</table>");
+        return b.toString();
+    }//makeHtmlTable
+    
+    private String makeStudentAttendanceTable(ArrayList list, String totalSessions, HttpSession session) {
+        StringBuilder b = new StringBuilder();
+        String[] row;
+        b.append("<table border=\"3\">");
+        
+        b.append("<tr>");
+        b.append("<th>Name (Student Number)</th>");
+        b.append("<th>Sessions Attended</th>");
+        b.append("<th>Total Sessions</th>");
+        b.append("<th>Attendance Percentage</th>");
+        b.append("<tr>");
+        
+        for (Object s : list) {
+          b.append("<tr>");
+          row = (String[]) s;
+          for (int i = 0; i < row.length; i++) {
+            if (i == 0) {
+            b.append("<td>");
+            b.append(row[i] + " (" + row[i + 1] + ")");
+            b.append("</td>");
+            } else if (i == 2) {
+                b.append("<td>");
+                b.append(row[i]);
+                b.append("</td>");
+                
+                b.append("<td>");
+                b.append(totalSessions);
+                b.append("</td>");
+            } else if (i == 3) {
+                b.append("<td>");
+                b.append(row[i]);
+                b.append("</td>");
+            }
+          }
           b.append("</tr>\n");
         } // for
         b.append("</table>");
@@ -199,7 +284,7 @@ public class Jdbc {
     }
     
     public int retrieveNextID(){
-        String query = "SELECT MAX(ID) FROM TEST.USERS";
+        String query = "SELECT MAX(ID) FROM USERS";
         int result = 0;
         try {
             statement = connection.createStatement();
@@ -243,6 +328,27 @@ public class Jdbc {
     
     public int retrieveNextSessionID(){
         String query = "SELECT MAX(ID) FROM SESSION";
+        int result = 0;
+        try {
+            statement = connection.createStatement();
+            rs = statement.executeQuery(query);
+            
+            for (Object s : rsToList()) {
+                String[] row = (String[]) s;
+                for (String row1 : row) {
+                    result = Integer.valueOf(row1) + 1;
+                }
+            }
+        }
+        catch(SQLException e) {
+            System.out.println("way way"+e);
+            //results = e.toString();
+        }
+        return result;
+    }
+    
+    public int retrieveNextRegisteredStudentID(){
+        String query = "SELECT MAX(ID) FROM REGISTEREDSTUDENTS";
         int result = 0;
         try {
             statement = connection.createStatement();
@@ -310,16 +416,46 @@ public class Jdbc {
         return result;
     }
     
+    public int retrieveNextUserAttendanceRecordID(){
+        String query = "SELECT MAX(ID) FROM USER_ATTENDANCE";
+        int result = 0;
+        try {
+            statement = connection.createStatement();
+            rs = statement.executeQuery(query);
+            
+            for (Object s : rsToList()) {
+                String[] row = (String[]) s;
+                for (String row1 : row) {
+                    if (row1 == null) {
+                        return 1;
+                    } 
+                    result = Integer.valueOf(row1) + 1;
+                }
+            }
+        }
+        catch(SQLException e) {
+            System.out.println("way way"+e);
+            //results = e.toString();
+        }
+        return result;
+    }
+        
     public String retrieve(String query, HttpSession session) throws SQLException {
         select(query);
-        if (query.contains("users")) {
+        if (query.contains("SELECT USERNAME, USERTYPE FROM USERS")) {
             return makeUsersTable(rsToList());
-        } else if (query.contains("SELECT MODULE, ROOM, TIME, REFERENCE FROM SESSION")) {
+        } else if (query.contains("SELECT MODULE, ROOM, TIME, REFERENCE")) {
             return makeSessionsTable(rsToList(), session);
-        } else if (query.contains("SELECT REFERENCE FROM ATTENDANCE_RECORD")) {
+        } else if (query.contains("SELECT REFERENCE, DATE FROM ATTENDANCE_RECORD")) {
             return makeAttendanceRecordsTable(rsToList(), session);
         } else if (query.contains("SELECT USERS.NAME, USERS.STUDENTNUMBER FROM ATTENDEE_RECORD")) {
             return makeAttendeesTable(rsToList(), session);
+        } else if (query.contains("SELECT SESSIONS_ATTENDED, ATTENDANCE_PERCENTAGE FROM USER_ATTENDANCE")) {
+            return makeUserAttendanceTable(rsToList(), getNumberOfRegistersTakenForSession((String) session.getAttribute("sessionID")), session);
+        } else if (query.contains("SELECT NAME, STUDENTNUMBER, SESSIONS_ATTENDED, ATTENDANCE_PERCENTAGE FROM USER_ATTENDANCE")) {
+            return makeStudentAttendanceTable(rsToList(), getNumberOfRegistersTakenForSession((String) session.getAttribute("sessionID")), session);
+        } else if (query.contains("SELECT NAME, STUDENTNUMBER, ATTENDANCE_PERCENTAGE FROM USERS")) {
+            extractAttendanceDetails(session, rsToList());
         }
         
         return makeTable(rsToList());
@@ -334,6 +470,44 @@ public class Jdbc {
         String[] sessionDetails = retrieveQueryWithStringArray(query);
         
         return sessionDetails;
+    }
+    
+    public String retrieveSessionIDFromReference(String sessionReference) {
+        String query = "SELECT ID FROM SESSION WHERE REFERENCE = '" + sessionReference + "'";
+        String[] sessionDetails = retrieveQueryWithStringArray(query);
+        
+        return sessionDetails[0];
+    }
+    
+    public String retrieveUserIDFromStudentNumber(String studentNumber) {
+        String query = "SELECT ID FROM USERS WHERE STUDENTNUMBER = '" + studentNumber + "'";
+        String[] retrievedUserID = retrieveQueryWithStringArray(query);
+        
+        return retrievedUserID[0];
+    }
+    
+    public String retrieveUserIDFromUsername(String username) {
+        String query = "SELECT ID FROM USERS WHERE USERNAME = '" + username + "'";
+        String[] retrievedUserID = retrieveQueryWithStringArray(query);
+        
+        return retrievedUserID[0];
+    }
+    
+    public String retrieveStudentNumberFromUserID(String userID) {
+        String query = "SELECT STUDENTNUMBER FROM USERS WHERE ID = " + Integer.parseInt(userID);
+        String[] retrievedStudentNumber = retrieveQueryWithStringArray(query);
+        
+        return retrievedStudentNumber[0];
+    }
+    
+    public void extractAttendanceDetails(HttpSession session, ArrayList list) {
+        String[] row;
+        List<String[]> attendanceDetails = new ArrayList<>();
+        for (Object s : list) {
+            row = (String[]) s;
+            attendanceDetails.add(row);
+        }
+        session.setAttribute("attendanceDetails", attendanceDetails);
     }
     
     public String[] RunQuery(String qry){
@@ -372,12 +546,13 @@ public class Jdbc {
         PreparedStatement ps = null;
         boolean success = false;
         try {
-            ps = connection.prepareStatement("INSERT INTO Users VALUES (?,?,?,?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
-            ps.setString(1, str[0].trim()); 
-            ps.setString(2, str[1].trim());            
-            ps.setString(3, str[2].trim());
-            ps.setString(4, str[3].trim());
-            ps.setString(5, String.valueOf(retrieveNextID()));
+            ps = connection.prepareStatement("INSERT INTO USERS VALUES (?,?,?,?,?,?)", PreparedStatement.RETURN_GENERATED_KEYS);
+            ps.setString(1, String.valueOf(retrieveNextID())); 
+            ps.setString(2, str[0].trim());            
+            ps.setString(3, str[1].trim());
+            ps.setString(4, str[2].trim());
+            ps.setString(5, str[3].trim());
+            ps.setString(6, str[4].trim());
             success = ps.executeUpdate() != 0;
         
             ps.close();
@@ -399,6 +574,11 @@ public class Jdbc {
             ps.setString(4, str[2].trim());
             ps.setString(5, retrieveCurrentUserId(session));
             ps.setString(6, generateSessionReference());
+            
+            if (session.getAttribute("userType").equals("Admin")) {
+                ps.setString(5, retrieveUserIDFromUsername(str[3].trim()));
+            }
+            
             success = ps.executeUpdate() != 0;
         
             ps.close();
@@ -536,6 +716,49 @@ public class Jdbc {
         }
     }
     
+    public void updateUserAttendanceRecords(List<String> registeredUsers, String sessionReference) throws SQLException{
+        PreparedStatement ps = null;
+        List<String> studentsRegisteredForSessions = getStudentsRegisteredForSession(sessionReference);
+        
+        for (String studentNumber : studentsRegisteredForSessions) {
+            String userID = retrieveUserIDFromStudentNumber(studentNumber);
+            incrementUserAttendance(sessionReference, userID, studentNumber);
+        }
+    }
+    
+    public void incrementUserAttendance(String sessionReference, String userID, String studentNumber) throws SQLException {
+        PreparedStatement ps = null;
+        
+        String sessionID = retrieveSessionIDFromReference(sessionReference);
+        
+        String query = "SELECT ID FROM USER_ATTENDANCE WHERE USER_ID = " + userID + " AND SESSION_ID = " + sessionID;            
+        String[] userAttendanceID = retrieveQueryWithStringArray(query);
+        String numberOfRegistersTaken = getNumberOfRegistersTakenForSession(sessionID);
+        String numberOfSessionsAttended = getNumberOfSessionsAttendedForStudent(sessionID, studentNumber);
+        double attendancePercentage = Math.round((Double.parseDouble(numberOfSessionsAttended) / Double.parseDouble(numberOfRegistersTaken)) * 100);
+        
+        if (userAttendanceID == null || userAttendanceID.length == 0) {
+                ps = connection.prepareStatement("INSERT INTO USER_ATTENDANCE VALUES (?,?,?,?,?)", PreparedStatement.RETURN_GENERATED_KEYS);
+                ps.setString(1, String.valueOf(retrieveNextUserAttendanceRecordID())); 
+                ps.setInt(2, Integer.parseInt(userID));            
+                ps.setInt(3, Integer.parseInt(sessionID));
+                ps.setInt(4, Integer.parseInt(numberOfSessionsAttended));
+                ps.setDouble(5, attendancePercentage);
+                
+                ps.executeUpdate();
+                ps.close();
+        } else {
+                ps = connection.prepareStatement("UPDATE USER_ATTENDANCE SET SESSIONS_ATTENDED = ?, ATTENDANCE_PERCENTAGE = ? WHERE ID = ?",
+                        PreparedStatement.RETURN_GENERATED_KEYS);
+                ps.setInt(1, Integer.parseInt(numberOfSessionsAttended)); 
+                ps.setDouble(2, attendancePercentage);
+                ps.setInt(3, Integer.parseInt(userAttendanceID[0]));
+                
+                ps.executeUpdate();
+                ps.close();
+        }
+    }
+    
     public void delete(String user){
        
       String query = "DELETE FROM Users " +
@@ -564,19 +787,38 @@ public class Jdbc {
         return bool;
     }
     
-    public boolean createAttendanceRecord(String module, String sessionReference) {
+    public boolean createAttendanceRecord(String module, String sessionReference, String date) {
         PreparedStatement ps = null;
         boolean success = false;
         try {
-            ps = connection.prepareStatement("INSERT INTO ATTENDANCE_RECORD VALUES (?,?,?,?)", PreparedStatement.RETURN_GENERATED_KEYS);
+            ps = connection.prepareStatement("INSERT INTO ATTENDANCE_RECORD VALUES (?,?,?,?,?)", PreparedStatement.RETURN_GENERATED_KEYS);
             ps.setString(1, String.valueOf(retrieveNextAttendanceRecordID()));
             ps.setString(2, generateAttendanceRecordReference());
             ps.setString(3, module);
-            ps.setString(4, getSessionIDFromReference(sessionReference));
+            ps.setString(4, date);
+            ps.setString(5, getSessionIDFromReference(sessionReference));
             
             success = ps.executeUpdate() != 0;
             ps.close();
             System.out.println("1 attendance record added.");
+        } catch (SQLException ex) {
+            Logger.getLogger(Jdbc.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return success;
+    }
+    
+    public boolean createRegisteredStudentRecord(String studentNumber, String sessionReference) {
+        PreparedStatement ps = null;
+        boolean success = false;
+        try {
+            ps = connection.prepareStatement("INSERT INTO REGISTEREDSTUDENTS VALUES (?,?,?)", PreparedStatement.RETURN_GENERATED_KEYS);
+            ps.setString(1, String.valueOf(retrieveNextRegisteredStudentID()));
+            ps.setString(2, retrieveUserIDFromStudentNumber(studentNumber));
+            ps.setString(3, retrieveSessionIDFromReference(sessionReference));
+            
+            success = ps.executeUpdate() != 0;
+            ps.close();
+            System.out.println("1 registered student record added.");
         } catch (SQLException ex) {
             Logger.getLogger(Jdbc.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -615,6 +857,13 @@ public class Jdbc {
         return sessionID[0];
     }
     
+    public String getModuleFromReference(String sessionReference) { 
+        String query = "SELECT MODULE FROM SESSION WHERE REFERENCE = '" + sessionReference + "'";
+        String[] sessionID = retrieveQueryWithStringArray(query);
+        
+        return sessionID[0];
+    }
+    
     public String getAttendanceRecordIDFromReference(String attendanceRecordReference) { 
         String query = "SELECT ID FROM ATTENDANCE_RECORD WHERE REFERENCE = '" + attendanceRecordReference + "'";
         String[] sessionID = retrieveQueryWithStringArray(query);
@@ -623,7 +872,7 @@ public class Jdbc {
     }
     
     public String getAttendanceRecordsForSession(String sessionID, HttpSession session) throws SQLException {
-        String query = "SELECT REFERENCE FROM ATTENDANCE_RECORD WHERE SESSION_ID = " + sessionID;
+        String query = "SELECT REFERENCE, DATE FROM ATTENDANCE_RECORD WHERE SESSION_ID = " + sessionID;
         String attendanceRecords = retrieve(query, session);
         
         return attendanceRecords;
@@ -632,10 +881,88 @@ public class Jdbc {
     public String getAttendeesForAttendanceRecord(String attendanceRecordID, HttpSession session) throws SQLException {
         String query = "SELECT USERS.NAME, USERS.STUDENTNUMBER FROM ATTENDEE_RECORD " +
                        "JOIN USERS ON USERS.STUDENTNUMBER = ATTENDEE_RECORD.STUDENTNUMBER " + 
-                       "WHERE ATTENDEE_RECORD.ATTENDANCERECORD_ID = '" + attendanceRecordID + "'";
+                       "WHERE ATTENDEE_RECORD.ATTENDANCERECORD_ID = " + attendanceRecordID;
         String attendanceRecords = retrieve(query, session);
         
         return attendanceRecords;
+    }
+    
+    public List<String> getRegisteredStudents(String sessionReference) throws SQLException {
+        String query = "SELECT NAME, STUDENTNUMBER FROM USERS "
+                + "JOIN REGISTEREDSTUDENTS ON REGISTEREDSTUDENTS.USER_ID = USERS.ID "
+                + "JOIN SESSION ON SESSION.ID = REGISTEREDSTUDENTS.SESSION_ID "
+                + "WHERE SESSION.REFERENCE = '" + sessionReference + "'";
+        List<String> registeredStudents = new ArrayList<>();   
+        select(query);
+        
+        for (Object s : rsToList()) {
+                String[] row = (String[]) s;
+                registeredStudents.add(row[0] + " (" + row[1] + ")");
+        }
+
+        return registeredStudents;
+    }
+    
+    public List<String> getStudentsRegisteredForSession(String sessionReference) throws SQLException {
+        String query = "SELECT STUDENTNUMBER FROM USERS "
+                + "JOIN REGISTEREDSTUDENTS ON REGISTEREDSTUDENTS.USER_ID = USERS.ID "
+                + "JOIN SESSION ON SESSION.ID = REGISTEREDSTUDENTS.SESSION_ID "
+                + "WHERE SESSION.REFERENCE = '" + sessionReference + "'";
+        List<String> registeredStudents = new ArrayList<>();   
+        select(query);
+        
+        for (Object s : rsToList()) {
+                String[] row = (String[]) s;
+                registeredStudents.add(row[0]);
+        }
+
+        return registeredStudents;
+    }
+    
+    public List<String> getAvailableStudents(List<String> registeredStudents) throws SQLException {
+        String query = "SELECT NAME, STUDENTNUMBER FROM USERS WHERE USERTYPE = 'Student'";
+        List<String> availableStudents = new ArrayList<>();   
+        select(query);
+        
+        for (Object s : rsToList()) {
+                String[] row = (String[]) s;
+                String student = row[0] + " (" + row[1] + ")";
+                boolean alreadyRegistered = false;
+                for (String registeredStudent : registeredStudents) {
+                    if (registeredStudent.contains(student)) {
+                        alreadyRegistered = true;
+                    }
+                }
+                if (!alreadyRegistered) {
+                    availableStudents.add(student);
+                }
+        }
+        
+        return availableStudents;
+    }
+    
+    public String getNumberOfRegistersTakenForSession(String sessionID) {
+        String query = "SELECT COUNT(ID) FROM ATTENDANCE_RECORD WHERE SESSION_ID = " + sessionID;
+        String[] registersTaken = retrieveQueryWithStringArray(query);
+        
+        return registersTaken[0];
+    }
+    
+    public String getNumberOfSessionsAttendedForStudent(String sessionID, String studentNumber) {
+        String query = "SELECT COUNT(ATTENDEE_RECORD.ID) FROM ATTENDEE_RECORD "
+                + "JOIN ATTENDANCE_RECORD ON ATTENDEE_RECORD.ATTENDANCERECORD_ID = ATTENDANCE_RECORD.ID "
+                + "WHERE ATTENDANCE_RECORD.SESSION_ID = " + sessionID 
+                + "AND ATTENDEE_RECORD.STUDENTNUMBER = '" + studentNumber + "'";
+        String[] sessionsAttended = retrieveQueryWithStringArray(query);
+        
+        return sessionsAttended[0];
+    }
+    
+    public String getStudentAttendancePercentage(String sessionID, String userID) {
+        String query = "SELECT ATTENDANCE_PERCENTAGE FROM USER_ATTENDANCE WHERE SESSION_ID = " + sessionID + " AND USER_ID = " + userID;
+        String[] studentAttendancePercentage = retrieveQueryWithStringArray(query);
+        
+        return studentAttendancePercentage[0];
     }
     
     public void closeAll(){

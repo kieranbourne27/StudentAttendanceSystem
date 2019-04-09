@@ -12,7 +12,7 @@
         <link rel="stylesheet" type="text/css" href="main.css">
         <title>Login Page</title>
     </head>
-    <body style="background: url(https://cdn.escapismmagazine.com/gallery/5819c96c7f7b5.jpeg)">
+    <body style="background: url(https://spotlight.it-notes.ru/wp-content/uploads/2018/06/bdbfb7f87ab76a9e892d3d86e63887c2.jpg)">
         <div class="loginForm">
             <div class="loginLogo">
                 <img src="https://idp.uwe.ac.uk/adfs/portal/logo/logo.png?id=883222B3C5782A4B95A781A48FDC3205D5818374AB3780112D5FC10A9E8900AE" 
@@ -26,19 +26,17 @@
                 <table>
                         <tr>
                             <td>Username:</td>
-                            <td><input type="text" name="username"/></td>
+                            <td><input type="text" name="username" required/></td>
                         </tr>
                         <tr>
                             <td>Password:</td>
-                            <td><input type="password" name="password"/></td>
+                            <td><input type="password" name="password" required/></td>
                         </tr>
                         <tr> 
                             <td> <input type="submit" value="Login"/></td>
                         </tr>
                 </table>
             </form>
-            <p> <a href ="signupUser.jsp">Forgotten password</a></p> 
-
             <p><%
                 if (request.getAttribute("message") != null) {
                     out.println(request.getAttribute("message"));

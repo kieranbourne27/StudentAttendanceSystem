@@ -8,7 +8,7 @@
     </head>
     <body>
         <jsp:include page="header.jsp"/>
-        <h1>Please Enter Session Details:</h1>
+        <h2>Please Enter Session Details:</h1>
         <form method="POST" action="CreateSession.do">     
             <table id="newSessionTable">
                 <tbody>
@@ -24,12 +24,33 @@
                         <td>Time:</td>
                         <td><input type="text" name="time" required/></td>
                     </tr>
+                    <%
+                    if (session.getAttribute("userType").equals("Admin")) {
+                        String[] lecturers = (String[]) request.getAttribute("lecturers");
+                    %>
+                    <tr>
+                        <td>Lecturer:</td>
+                        <td>
+                            <select name="lecturer" required>
+                            <%
+                                for(int i = 0; i < lecturers.length; i++){
+                                    String name = lecturers[i];
+                            %>
+                            <option value = " <%=(String)(name)%> "><%=(String)(name)%></option>
+                            <% } %>
+                        </select>
+                        </td>
+                    </tr>
+                    <%
+                    }
+                    %>
                 </tbody
                 <tr> 
                     <td> <input type="submit" value="Submit"/></td>
                 </tr>
             </table>
         </form>
+        <br>
         <jsp:include page="foot.jsp"/>
     </body>
 </html>

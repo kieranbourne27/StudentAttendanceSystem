@@ -19,24 +19,17 @@
         }
     %>
         <jsp:include page="header.jsp"/>
-        <h1>Password change</h1>
+        <h2>Password change</h1>
+        <h3>Please enter and confirm your new password</h2>
            <form method="POST" action="Update.do">     
             <table>
                 <tr>
-                    <th></th>
-                    <th>Please provide your following details</th>
-                </tr>
-                <tr>
-                    <td>Username:</td>
-                    <td><input type="text" name="username"/></td>
-                </tr>
-                <tr>
                     <td>New Password:</td>
-                    <td><input type="password" name="password"/></td>
+                    <td><input type="password" name="password" required/></td>
                 </tr>
                 <tr>
                     <td>Confirm Password:</td>
-                    <td><input type="password" name="newpasswd"/></td>
+                    <td><input type="password" name="newpasswd" required/></td>
                 </tr>
                 <tr> 
                     <td> <input type="submit" value="Change"/></td>
@@ -44,6 +37,7 @@
             </table>
         </form>
         <%=((String)(request.getAttribute("msg"))!=null) ? (String)(request.getAttribute("msg")):""%>
+        <br>
         <jsp:include page="foot.jsp"/>
     </body>
 </html>

@@ -41,7 +41,7 @@ public class Update extends HttpServlet {
         else {
             String [] query = new String[3];
         
-            query[0] = (String)request.getParameter("username");
+            query[0] = (String)session.getAttribute("username");
             query[1] = (String)request.getParameter("password");
             query[2] = (String)request.getParameter("newpasswd");  
             
@@ -52,7 +52,7 @@ public class Update extends HttpServlet {
              else {
                 jdbc.update(query);
                 
-                request.setAttribute("msg", ""+query[0]+"'s passwd is changed</br>");
+                request.setAttribute("msg", "" + query[0] + "'s password is changed</br>");
                 request.getRequestDispatcher("/WEB-INF/passwdChange.jsp").forward(request, response);
             }
         }

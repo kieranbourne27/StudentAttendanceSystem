@@ -2,28 +2,80 @@
 .displayUsers table, 
 .displaySessions table,
 .displayAttendanceRecords table,
-.displayAttendeeRecords table {
+.displayAttendeeRecords table,
+.displayUserAttendance table,
+.displayStudentAttendance table {
+    font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
     border-collapse: collapse;
     width: 100%;
 }
 
-.displayUsers th, td, 
-.displaySessions th, td,
-.displayAttendanceRecords th, td,
-.displayAttendeeRecords th, td {
+.displayUsers td, 
+.displaySessions td,
+.displayAttendanceRecords td,
+.displayAttendeeRecords td,
+.displayUserAttendance td,
+.displayStudentAttendance td {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+
+.displayUsers th,
+.displaySessions th, 
+.displayAttendanceRecords th, 
+.displayAttendeeRecords th, 
+.displayUserAttendance th, 
+.displayStudentAttendance th {
     padding: 8px;
     text-align: left;
+    background-color: #4CAF50;
+    color: white;
 }
 
 .displayUsers tr:hover, 
 .displaySessions tr:hover,
 .displayAttendanceRecords tr:hover,
-.displayAttendeeRecords tr:hover {
-    background-color:#ffffcc;
+.displayAttendeeRecords tr:hover,
+.displayUserAttendance tr:hover,
+.displayStudentAttendance tr:hover {
+    background-color: #ddd;
 }
 
-.footer{
-    position: fixed;
+.displayUsers tr:nth-child(even), 
+.displaySessions tr:nth-child(even),
+.displayAttendanceRecords tr:nth-child(even),
+.displayAttendeeRecords tr:nth-child(even),
+.displayUserAttendance tr:nth-child(even),
+.displayStudentAttendance tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+.chartContainer {
+    height: 300px; 
+    width: 100%;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+h1, h2, h3 {
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+p {
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+table {
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.main {
+    padding-bottom: 5;
+}
+
+.footer {
+    //position: absolute;
     left: 0;
     bottom: 0;
     width: 100%;
@@ -92,9 +144,11 @@
     margin-left: auto;
     margin-right: auto;
     width: 50%;
-    border: 1px;
-    background: black;
-    color: white;
+    border: 2px;
+    border-color: black;
+    border-style: solid;
+    background: white;
+    color: black;
     padding: 2px;
     vertical-align: central;
     font-family: sans-serif;
@@ -110,7 +164,7 @@
 }
 
 .loginForm a {
-    color: white;
+    color: black;
     padding-left: 5px;
 }
 

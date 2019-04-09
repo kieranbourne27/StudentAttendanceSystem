@@ -38,20 +38,12 @@
                 </tbody>
             </table>
         </form>
-        <form method="POST" action="SessionAction.do">
-            <hr>
-            <h2>Delete a Session</h2>
-            <h3>Enter the reference of the session you want to delete</h3>
-            <table id="deleteSessionTable">
-                <tbody>
-                    <tr>
-                        <td style="padding-left: 0px">Session Reference:</td>
-                        <td><input type="text" name="sessionReference" required/></td>
-                        <td><button type="submit" name="tbl" value="Delete">Delete</button></td>
-                    </tr>
-                </tbody>
-            </table>
-        </form>
+        <%
+             if (session.getAttribute("sessionReferenceError") != null) {
+                 out.print(session.getAttribute("sessionReferenceError"));
+             }  
+        %>
+        <br>
         <jsp:include page="foot.jsp"/>
     </body>
 </html>

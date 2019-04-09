@@ -18,6 +18,10 @@
             <table id="selectSessionTable">
                 <tbody>
                     <tr>
+                        <td style="padding-left: 0px">Date of Session:</td>
+                        <td><input type="date" name="sessionDate" required/></td>
+                    </tr>
+                    <tr>
                         <td style="padding-left: 0px">Session Reference:</td>
                         <td><input type="text" name="sessionReference" required/></td>
                         <td><button type="submit" name="tbl" value="Select">Select</button></td>
@@ -25,6 +29,11 @@
                 </tbody>
             </table>
         </form>
+        <%
+        if (session.getAttribute("sessionReferenceError") != null) {
+            out.print(session.getAttribute("sessionReferenceError"));
+        }  
+        %>
         <hr>
         <%=((String)(request.getAttribute("msg"))!=null) ? (String)(request.getAttribute("msg")):""%>
         <jsp:include page="foot.jsp"/>

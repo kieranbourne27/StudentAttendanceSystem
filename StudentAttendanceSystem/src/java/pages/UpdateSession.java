@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
@@ -35,15 +36,38 @@ public class UpdateSession extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+            throws ServletException, IOException, SQLException {
         response.setContentType("text/html;charset=UTF-8");
         HttpSession session = request.getSession(false);
         String[] query = captureSessionData(request);
-        
         Jdbc dbBean = new Jdbc();
         dbBean.connect((Connection) request.getServletContext().getAttribute("connection"));
         session.setAttribute("dbbean", dbBean);
-        updateSession(dbBean, query, request, session, response);
+        switch (request.getParameter("Update")) {
+            case "Update":
+                updateSession(dbBean, query, request, session, response);
+                break;
+            case "Add":
+                String studentDetails = request.getParameter("student");
+                String studentNumber = studentDetails.split("[\\(\\)]")[1];
+                if (dbBean.createRegisteredStudentRecord(studentNumber, request.getParameter("sessionReference"))) {            
+                    request.setAttribute("message", "Student registered for session.");
+                    String[] sessionDetails = dbBean.retrieveSessionDetails(request.getParameter("sessionReference"));
+                    List<String> registeredStudents = dbBean.getRegisteredStudents(request.getParameter("sessionReference"));
+                    List<String> availableStudents = dbBean.getAvailableStudents(registeredStudents);
+                    request.setAttribute("module", sessionDetails[0]);
+                    request.setAttribute("room", sessionDetails[1]);
+                    request.setAttribute("time", sessionDetails[2]);
+                    request.setAttribute("registeredStudents", registeredStudents);
+                    request.setAttribute("availableStudents", availableStudents);
+                    request.setAttribute("sessionReference", request.getParameter("sessionReference"));
+                    request.getRequestDispatcher("/WEB-INF/editSession.jsp").forward(request, response); 
+                } else {
+                    request.setAttribute("message", "Student was not registered for session.");
+                }
+                break;
+        }
+        
     }
     
     private void updateSession(Jdbc dbBean, String[] query, HttpServletRequest request, HttpSession session, HttpServletResponse response) throws IOException, ServletException {
@@ -74,6 +98,9 @@ public class UpdateSession extends HttpServlet {
         String query = "SELECT MODULE, ROOM, TIME, REFERENCE FROM SESSION "
                 + "JOIN USERS ON USERS.ID = SESSION.OWNER_ID "
                 + "WHERE USERS.USERNAME = '" + session.getAttribute("username") + "'";
+        if (session.getAttribute("userType").equals("Admin")) {
+            query = "SELECT MODULE, ROOM, TIME, REFERENCE FROM SESSION";
+        }
         String result = requestData(session, msg, query);
         
         request.setAttribute("sessionTable", result);
@@ -103,7 +130,11 @@ public class UpdateSession extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        try {
+            processRequest(request, response);
+        } catch (SQLException ex) {
+            Logger.getLogger(UpdateSession.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**
@@ -117,7 +148,11 @@ public class UpdateSession extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        try {
+            processRequest(request, response);
+        } catch (SQLException ex) {
+            Logger.getLogger(UpdateSession.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**
