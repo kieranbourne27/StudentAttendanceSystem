@@ -17,7 +17,6 @@ import javax.servlet.ServletContext;
 /**
  * Web application lifecycle listener.
  *
- * @author me-aydin
  */
 @WebListener()
 public class UserServletListener implements ServletContextListener {
@@ -30,7 +29,6 @@ public class UserServletListener implements ServletContextListener {
         String db = sc.getInitParameter("dbname");
         
         try {
-            //Class.forName("com.mysql.jdbc.Driver");
             Class.forName("org.apache.derby.jdbc.ClientDriver");
             conn = DriverManager.getConnection("jdbc:derby://localhost:1527/database/", "test","test");
             

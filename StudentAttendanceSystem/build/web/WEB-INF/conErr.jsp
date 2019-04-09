@@ -1,9 +1,3 @@
-<%-- 
-    Document   : conErr
-    Created on : 30-Nov-2015, 13:26:37
-    Author     : me-aydin
---%>
-
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html>

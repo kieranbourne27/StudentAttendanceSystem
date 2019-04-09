@@ -16,7 +16,6 @@ import model.Jdbc;
 
 /**
  *
- * @author me-aydin
  */
 public class NewUser extends HttpServlet {
 
