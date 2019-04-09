@@ -1,9 +1,3 @@
-<%-- 
-    Document   : passwdChange
-    Created on : 11-Mar-2016, 01:02:16
-    Author     : me-aydin
---%>
-
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html>

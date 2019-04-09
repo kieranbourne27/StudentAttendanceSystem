@@ -19,7 +19,6 @@ import model.Jdbc;
 
 /**
  *
- * @author me-aydin
  */
 public class UserServLet extends HttpServlet {
 
